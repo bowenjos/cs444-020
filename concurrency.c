@@ -144,7 +144,7 @@ void *hello(void *tid)
 	struct args *a = (struct args*)tid;
 		
 	
-	if (a->sleep_time<10){
+	if (a->sleep_time<10 && a->sleep_time>1){
 	printf("sleeptime %ld\n", a->sleep_time);
 	sleep(a->sleep_time);
 	
@@ -159,24 +159,14 @@ void *hello(void *tid)
 }
 
 void *producer(void *tid){
-long producer_sleep = 0;
-	
-//	pthread_mutex_trylock (&mymutex);
-	//struct args *a;
-//	pthread_mutex_unlock (&mymutex);
-//	for (long i = 0; i < 10; ++i){
-//		if(i==31){
-//			i = 0;
-//		}	
-	
-		producer_sleep = genrand_int32() % 7;
-		printf("producersleep %ld\n",  producer_sleep);
-			pthread_mutex_trylock (&mymutex);
-		sleep(producer_sleep);
-		struct args *a = (struct args*)tid;
-		a->sleep_time = genrand_int32() % 10;
-		pthread_mutex_unlock (&mymutex);
-//	}
+
+	pthread_mutex_lock (&mymutex);
+	long producer_sleep = genrand_int32() % 5;
+	printf("producersleep %ld\n",  producer_sleep+2);
+	sleep(producer_sleep);
+	struct args *a = (struct args*)tid;
+	a->sleep_time = genrand_int32() % 10;
+	pthread_mutex_unlock (&mymutex);
 	return (void*) printf("Stopping producer\n");
 
 }
@@ -212,20 +202,26 @@ int main(int argc, char **argv)
 	
 	pthread_t threads[atoi(argv[1])];
 	struct args a[atoi(argv[1])];
-	for(long i = 0; i <= atoi(argv[1]); ++i){
+	for(long i = 0; i < atoi(argv[1]); ++i){
 
 		/* int pthread_create(pthread_t *thread, const pthread_attr_t *attr, */
 		/*                    void *(*start_routine) (void *), void *arg); */
-/*		sleep(genrand_int32%7);
-		a[i].tid = i;
-		a[i].sleep_time = genrand_int32() % 10;
-*/
-		a[i].tid = i;
-		pthread_create(&threads[0], NULL, producer, (void *)( &a[i]));
+		//		a[i].tid = i;
+//		pthread_create(&threads[0], NULL, producer, (void *)( &a[i]));
 		pthread_create(&(threads[i]),
 		               NULL,
 		               hello,
 		               (void *)( &a[i]));
+	}
+	for(long i = 0; i < atoi(argv[1]); ++i){
+		pthread_mutex_trylock (&mymutex);
+		long sleepTime = genrand_int32()%5;
+		sleep(sleepTime+2);
+		printf("sleeping producer %ld\n", sleepTime+2);
+		a[i].tid = i;
+ 		long consumerSleep = genrand_int32() % 8;
+		a[i].sleep_time = consumerSleep+2;
+		pthread_mutex_unlock(&mymutex);
 	}
 	for(long i = 0; i < atoi(argv[1]); ++i){
 		pthread_join(threads[i], NULL);
