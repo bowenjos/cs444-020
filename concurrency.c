@@ -136,30 +136,28 @@ double genrand_res53(void)
     unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6; 
     return(a*67108864.0+b)*(1.0/9007199254740992.0); 
 }
-void *hello(void *tid)
+void *consumer(void *tid)
 {
-	printf("trying to lock from thread \n");
-	while(1){	
-	pthread_mutex_trylock (&mymutex);
+//	printf("trying to lock from a consumer thread \n");
 	struct args *a = (struct args*)tid;
-		
-	
-	if (a->sleep_time<10 && a->sleep_time>1){
-	printf("sleeptime %ld\n", a->sleep_time);
-	sleep(a->sleep_time);
-	
-	printf("Hello from thread %ld! I did %ld units of work!\n", a->tid, a->sleep_time);
-	pthread_mutex_unlock (&mymutex);
-	
-	return (void *)printf("stopping consumer\n");
+	while(1){		
+		if (a->sleep_time<10 && a->sleep_time>1 && a->tid > -1 && a->tid <32){
+			pthread_mutex_lock (&mymutex);
+//	printf("Consumer Sleeptime %ld\n", a->sleep_time);
+			long conSleepTime = a->sleep_time;
+			long conTid = a->tid;
+			a->sleep_time = -1;
+			a->tid = -1;
+			pthread_mutex_unlock (&mymutex);
+			sleep(conSleepTime);
+			return (void *)	printf("Hello from thread %ld! I did %ld units of work!\n", conTid, conSleepTime);
+//	return (void *)printf("stopping consumer\n");
 		}
 	}
 
-	pthread_mutex_unlock (&mymutex);
 }
-
+/*
 void *producer(void *tid){
-
 	pthread_mutex_lock (&mymutex);
 	long producer_sleep = genrand_int32() % 5;
 	printf("producersleep %ld\n",  producer_sleep+2);
@@ -169,14 +167,14 @@ void *producer(void *tid){
 	pthread_mutex_unlock (&mymutex);
 	return (void*) printf("Stopping producer\n");
 
-}
+}*/
 
 int main(int argc, char **argv)
 {
 	unsigned long init[4] = {0x123, 0x234, 0x345, 0x456};
 	unsigned long length = 4;
 	
-	printf("args %s \n", argv[1]);
+	printf("Number of consumers to be created %s \n", argv[1]);
 	unsigned int eax;
 	unsigned int ebx;
 	unsigned int ecx;
@@ -202,26 +200,45 @@ int main(int argc, char **argv)
 	
 	pthread_t threads[atoi(argv[1])];
 	struct args a[atoi(argv[1])];
+	for(long j = 0; j < 32; j++){
+		pthread_mutex_lock (&mymutex);
+	//	a[j].sleep_time = 100;
+	//	a[j].tid = j;
+		pthread_mutex_unlock(&mymutex);
+	}
+	long j = 0;
 	for(long i = 0; i < atoi(argv[1]); ++i){
-
 		/* int pthread_create(pthread_t *thread, const pthread_attr_t *attr, */
 		/*                    void *(*start_routine) (void *), void *arg); */
 		//		a[i].tid = i;
 //		pthread_create(&threads[0], NULL, producer, (void *)( &a[i]));
 		pthread_create(&(threads[i]),
 		               NULL,
-		               hello,
-		               (void *)( &a[i]));
+		               consumer,
+		               (void *)( &a[j]));
+		j++;
+		if(i==32){
+			j = 0;
+		}	
 	}
 	for(long i = 0; i < atoi(argv[1]); ++i){
-		pthread_mutex_trylock (&mymutex);
-		long sleepTime = genrand_int32()%5;
-		sleep(sleepTime+2);
-		printf("sleeping producer %ld\n", sleepTime+2);
+		pthread_mutex_lock (&mymutex);
 		a[i].tid = i;
  		long consumerSleep = genrand_int32() % 8;
 		a[i].sleep_time = consumerSleep+2;
+//		printf("Current buffer: \n");
+//		for(int j = 0; j < 32; j++){
+//			if(a[j].sleep_time < 10 && a[j].sleep_time > 0){
+//				printf("%ld : %ld \n", a[j].tid, a[j].sleep_time);
+//			}
+//		}
 		pthread_mutex_unlock(&mymutex);
+		long sleepTime = genrand_int32()%5;
+		sleep(sleepTime+2);
+		printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
+		if(i==31){
+			i = 0;
+		}
 	}
 	for(long i = 0; i < atoi(argv[1]); ++i){
 		pthread_join(threads[i], NULL);
