@@ -13,6 +13,7 @@
 
 
 
+pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
 struct args{
 	long tid;
 	long sleep_time;
@@ -137,11 +138,48 @@ double genrand_res53(void)
 }
 void *hello(void *tid)
 {
+	printf("trying to lock from thread \n");
+	while(1){	
+	pthread_mutex_trylock (&mymutex);
 	struct args *a = (struct args*)tid;
+		
+	
+	if (a->sleep_time<10){
+	printf("sleeptime %ld\n", a->sleep_time);
 	sleep(a->sleep_time);
-	return (void*) printf("Hello from thread %ld! I did %ld units of work!\n", a->tid, a->sleep_time);
+	
+	printf("Hello from thread %ld! I did %ld units of work!\n", a->tid, a->sleep_time);
+	pthread_mutex_unlock (&mymutex);
+	
+	return (void *)printf("stopping consumer\n");
+		}
+	}
+
+	pthread_mutex_unlock (&mymutex);
 }
 
+void *producer(void *tid){
+long producer_sleep = 0;
+	
+//	pthread_mutex_trylock (&mymutex);
+	//struct args *a;
+//	pthread_mutex_unlock (&mymutex);
+//	for (long i = 0; i < 10; ++i){
+//		if(i==31){
+//			i = 0;
+//		}	
+	
+		producer_sleep = genrand_int32() % 7;
+		printf("producersleep %ld\n",  producer_sleep);
+			pthread_mutex_trylock (&mymutex);
+		sleep(producer_sleep);
+		struct args *a = (struct args*)tid;
+		a->sleep_time = genrand_int32() % 10;
+		pthread_mutex_unlock (&mymutex);
+//	}
+	return (void*) printf("Stopping producer\n");
+
+}
 
 int main(int argc, char **argv)
 {
@@ -149,26 +187,46 @@ int main(int argc, char **argv)
 	unsigned long length = 4;
 	
 	printf("args %s \n", argv[1]);
-	init_by_array(init, length);
+	unsigned int eax;
+	unsigned int ebx;
+	unsigned int ecx;
+	unsigned int edx;
 
+	char vendor[13];
+	
+	eax = 0x01;
+
+	__asm__ __volatile__(
+	                     "cpuid;"
+	                     : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+	                     : "a"(eax)
+	                     );
+	
+	if(ecx & 0x40000000){
+		//use rdrand
+	}
+	else{
+		//use mt19937
+		init_by_array(init, length);
+	}
 	
 	pthread_t threads[atoi(argv[1])];
 	struct args a[atoi(argv[1])];
-	
-	for(long i = 0; i < atoi(argv[1]); ++i){
+	for(long i = 0; i <= atoi(argv[1]); ++i){
 
 		/* int pthread_create(pthread_t *thread, const pthread_attr_t *attr, */
 		/*                    void *(*start_routine) (void *), void *arg); */
-
+/*		sleep(genrand_int32%7);
 		a[i].tid = i;
 		a[i].sleep_time = genrand_int32() % 10;
-
+*/
+		a[i].tid = i;
+		pthread_create(&threads[0], NULL, producer, (void *)( &a[i]));
 		pthread_create(&(threads[i]),
 		               NULL,
 		               hello,
 		               (void *)( &a[i]));
 	}
-
 	for(long i = 0; i < atoi(argv[1]); ++i){
 		pthread_join(threads[i], NULL);
 	}
