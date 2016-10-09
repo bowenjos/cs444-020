@@ -173,8 +173,9 @@ int main(int argc, char **argv)
 {
 	unsigned long init[4] = {0x123, 0x234, 0x345, 0x456};
 	unsigned long length = 4;
-	
+	int mt = 0;
 	printf("Number of consumers to be created %s \n", argv[1]);
+	
 	unsigned int eax;
 	unsigned int ebx;
 	unsigned int ecx;
@@ -192,20 +193,25 @@ int main(int argc, char **argv)
 	
 	if(ecx & 0x40000000){
 		//use rdrand
+	//	rdrand_32(int, int);
+
 	}
 	else{
 		//use mt19937
-		init_by_array(init, length);
+		//init_by_array(init, length);
+		mt = 1;
+		time_t t;
+		init_genrand((unsigned) time(&t));	
 	}
 	
 	pthread_t threads[atoi(argv[1])];
 	struct args a[atoi(argv[1])];
-	for(long j = 0; j < 32; j++){
-		pthread_mutex_lock (&mymutex);
+	//for(long j = 0; j < 32; j++){
+//		pthread_mutex_lock (&mymutex);
 	//	a[j].sleep_time = 100;
 	//	a[j].tid = j;
-		pthread_mutex_unlock(&mymutex);
-	}
+//		pthread_mutex_unlock(&mymutex);
+//	}
 	long j = 0;
 	for(long i = 0; i < atoi(argv[1]); ++i){
 		/* int pthread_create(pthread_t *thread, const pthread_attr_t *attr, */
@@ -233,9 +239,16 @@ int main(int argc, char **argv)
 //			}
 //		}
 		pthread_mutex_unlock(&mymutex);
-		long sleepTime = genrand_int32()%5;
-		sleep(sleepTime+2);
-		printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
+		if(mt == 1){
+			long sleepTime = genrand_int32()%5;
+			sleep(sleepTime+2);
+			printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
+		}
+		else{
+			long sleepTime = 1;//rdrand code here
+			sleep(sleepTime+2);
+			printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
+		}
 		if(i==31){
 			i = 0;
 		}
