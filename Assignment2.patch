@@ -1,0 +1,1773 @@
+diff --git a/Assignment1/Assignment1.pdf b/Assignment1/Assignment1.pdf
+deleted file mode 100644
+index a904319..0000000
+--- a/Assignment1/Assignment1.pdf
++++ /dev/null
+@@ -1,293 +0,0 @@
+-Assignment 1, CS444 Christopher Mendez, Joshua Bowen
+-
+-1 Command Line Commands
+-
+-1.1 In First Terminal
+-
+-    • git clone –branch v3.14.26 git://git.yoctoproject.org/linux-yocto-3.14
+-    • source /scratch/opt/environment-setup-i586-poky-linux.csh
+-    • qemu-system-i386 -gdb tcp::???? -S -nographic -kernel bzImage-qemux86.bin -drive ﬁle=core-
+-
+-       image-lsb-sdk-qemux86.ext3,if=virtio -enable-kvm -net none -usb -localtime –no-reboot –
+-       append ”root=/dev/vda rw console=ttyS0 debug”
+-    • Make -j4 all
+-
+-1.2 In Second Terminal
+-
+-    • gdb
+-    • ﬁle vmlinux
+-    • target remote :5520
+-    • make linux –menuconﬁg
+-
+-2 Concurrency Write-Up
+-
+-Our concurrency solution involved using threads with mutexs for synchronization.
+-
+-p t h r e a d m u t e x t mymutex = PTHREAD MUTEX INITIALIZER ;
+-
+-When the program is started, it creates the speciﬁed number of consumer threads using a loop.
+-Each of these consumers when created is given a value between 0-31 and checks that element in the
+-array in a loop until it has been ﬁlled with a number that is between 2 and 9.
+-
+-      long j = 0;
+-      f o r ( long i = 0 ; i < a t o i ( argv [ 1 ] ) ; ++i ) {
+-
+-                    pthread create (&( threads [ i ] ) ,
+-                                               NULL,
+-                                               consumer ,
+-                                               ( void ∗ ) ( &a [ j ] ) ) ;
+-
+-                    j ++;
+-                    i f ( i ==32){
+-
+-                                   j = 0;
+-                    }
+-      }
+-
+-The consumer then grabs locks on the mutex and modiﬁes the buﬀer, removing the values at that
+-element. It then unlocks and sleeps for the speciﬁed time, then prints the values.
+-
+-void  ∗consumer ( void  ∗tid )
+-{                       ∗a = ( struct
+-           struct args
+-           while (1){                  args ∗) tid ;
+-
+-                                       1
+-                             i f ( a−>s l e e p t i m e <10 && a−>s l e e p t i m e >1 && a−>t i d > −1 && a−>t i d <32){
+-                                           p t h r e a d m u t e x l o c k (&mymutex ) ;
+-                                           long conSleepTime = a−>s l e e p t i m e ;
+-                                           long conTid = a−>t i d ;
+-                                           a−>s l e e p t i m e = −1;
+-                                           a−>t i d = −1;
+-                                           pthread mutex unlock (&mymutex ) ;
+-                                            sleep ( conSleepTime );
+-
+-                             return ( void ∗) p r i n t f ( ” H e l l o from t h r e a d %l d ! I did %l d u n i t s o f work ! \ n
+-                             }
+-              }
+-
+-}
+-
+-Meanwhile the producer(which is just a loop in the main function not a separate thread) goes
+-between 0-31 (and if there are more consumers speciﬁed it starts back at 0) and takes the mutex
+-locks, and ﬁlls in one of the elements in the buﬀer. After that it releases its locks and sleeps for 3-7
+-seconds before printing what it just did and repeating.
+-
+-              f o r ( long i = 0 ; i < a t o i ( argv [ 1 ] ) ; ++i ) {
+-                             p t h r e a d m u t e x l o c k (&mymutex ) ;
+-                             a[ i ]. tid = i ;
+-                             long consumerSleep = genrand int32 () % 8;
+-                             a [ i ] . sleep time = consumerSleep +2;
+-
+-                             pthread mutex unlock (&mymutex ) ;
+-                             i f (mt == 1 ) {
+-
+-                                           long sleepTime = genrand int32 ()%5;
+-                                            sleep ( sleepTime +2);
+-                             p r i n t f ( ” Producer j u s t s l e p t f o r : %l d and f i l l e d t i d %l d \n” , sleepTime +2
+-                             }
+-                             else{
+-                                           long sleepTime = 1; //rdrand code here
+-                                            sleep ( sleepTime +2);
+-                             p r i n t f ( ” Producer j u s t s l e p t f o r : %l d and f i l l e d t i d %l d \n” , sleepTime +2
+-                             }
+-                             i f ( i ==31){
+-                                            i = 0;
+-                             }
+-              }
+-
+-3 Qemu Flags
+-
+-    • gdb tcp::55020
+-
+-    open a gdbserver on TCP port 55020
+-
+-    •S
+-
+-    Do not start CPU at startup (you must type c in the monitor)
+-
+-    • nographic
+-
+-                                                                2
+-    Normally, QEMU uses SDL to display the VGA output. With this option, you can totally disable
+-graphical output so that QEMU is a simple command line application. The emulated serial port
+-is redirected on the console and muxed with the monitor (unless redirected elsewhere explicitly).
+-Therefore, you can still use QEMU to debug a Linux kernel with a serial console.
+-
+-    • kernel bzImage-qemux86.bin
+-
+-    Use bzImage as kernel image
+-    • drive ﬁle=core-image-lsb-sdk-qemux86.ext3,
+-
+-    A way to boot other than from a CD-ROM
+-    • if=virtio
+-
+-    Check for virtio driver. If this is there we can boot KVM
+-    • enable-kvm
+-
+-    Enable KVM full virtualization support. This option is only available if KVM support is enabled
+-when compiling.
+-
+-    • net none
+-
+-    Indicate that no network devices should be conﬁgured. It is used to override the default conﬁg-
+-uration (-net nic -net user) which is activated if no -net options are provided.
+-
+-    • usb
+-
+-    Add the USB device
+-    • localtime
+-
+-    Use local time
+-    • no-reboot
+-
+-    Exit instead of rebooting.
+-    • append ”root=/dev/vda rw console=ttyS0 debug”
+-
+-    Give the kernel command line arguments
+-
+-4 Questions
+-
+-4.1 What do you think the main point of this assignment is?
+-
+-Set us up for success in future assignments. This assignment toured a lot of class resources, using
+-tophat, the qemu documentation and the course webpage for tutorials and templates; using Kevin
+-to answer any wording questions; learning git, LaTeX and how to start the kernel, and ensuring we
+-could start and run some c code on os-class. Instead of having students meltdown and panic on
+-harder assignments because they didnt understand how to make use of these tools, this hopefully
+-gets some of the learning curve out of the way.
+-
+-                                                                3
+-4.2 How did you personally approach the problem? Design decisions,
+-       algorithm, etc.
+-
+-Upon learning the assignment was to use pthreads I ﬁgured mutexes were the way to go because
+-they are straightforward, would meet the synchronization constraints and I am familiar with them
+-from CS344. The way I decided to use mutexes was to lock anytime I was going to modify the shared
+-array, store any values I needed locally, and then unlock. I didnt look for the times I would check
+-to see what values were in the array as I didnt see this as a danger as it didnt involve modifying the
+-memory. A decision made poorly early on was to try to make the producers and consumers their own
+-threads. It took about an hour and a half of doing this to realize that by having a producer thread
+-for each consumer I was making things far more complicated than need be. Instead having a for
+-loop to generate the values works just and was simpler to implement. After I ﬁxed this everything
+-else fell into place.
+-
+-4.3 How did you ensure your solution was correct? Testing details, for
+-       instance.
+-
+-To see if the consumer/producers ﬁrst I disabled the consumer sleep statement, so they wouldnt
+-sleep at all. Then I gave the producers a sleep time of 5, and ran a stopwatch to see if the program
+-took 25 seconds to ﬁnish with 5 consumers. Then reversed it so the producers produced without
+-sleeping but the consumers had 5 second sleeptime. This told me that the producers and consumers
+-didnt step over themselves and that the locks worked. To ensure they didnt step over each other
+-I tried some other values. For example if both producers and consumers sleep for 3 seconds, then
+-they should print at almost the same time, whereas if they are staggered so that producers sleep
+-for 3 seconds and consumers for 6, than 2 items should be produced in the time one is consumed.
+-All of this worked as expected brought back the randomized statements and tested for a variety of
+-numbers, up to 50.
+-
+-4.4 What did you learn?
+-
+-Shallow knowledge about git, qemu and LaTeX. How to get help from Kevin, tophat and the course
+-webpage. Refreshed on C, pthreads and synchronization.
+-
+-                                                                4
+-5
+-5 Git History
+-
+-Commit                                                        Message
+-commit 0107728d1077ed6a170639b50df4e6f4957ecb31 Author:       Yocto Files for real
+-bowenjos ¡bowenjos@oregonstate.edu¿ Date: Sun Oct 9 22:38:17  this time
+-2016 -0700
+-commit cea3cb9b6a16439e04d0e9ac819ce772572604bf Author:       Yocto Files 2.0
+-bowenjos ¡bowenjos@oregonstate.edu¿ Date: Sun Oct 9 22:31:38
+-2016 -0700                                                    Yocto Files
+-commit 2ece0dbd261eeb9954157e887db67f0f582d5d44 Merge:
+-bb81365 cf3558b Author: bowenjos ¡bowenjos@oregonstate.edu¿   :...skipping...
+-Date: Sun Oct 9 22:29:43 2016 -0700
+-commit bb81365122a69088d250457b8e8619dad651a9ﬀ Author:        Yocto Files for real
+-bowenjos ¡bowenjos@oregonstate.edu¿ Date: Sun Oct 9 22:09:14  this time
+-2016 -0700
+-commit 0107728d1077ed6a170639b50df4e6f4957ecb31 Author:       Yocto Files 2.0
+-bowenjos ¡bowenjos@oregonstate.edu¿ Date: Sun Oct 9 22:38:17
+-2016 -0700                                                    Yocto Files
+-commit cea3cb9b6a16439e04d0e9ac819ce772572604bf Author:
+-bowenjos ¡bowenjos@oregonstate.edu¿ Date: Sun Oct 9 22:31:38  Yocto Files
+-2016 -0700
+-commit 2ece0dbd261eeb9954157e887db67f0f582d5d44 Merge:        Randomization
+-bb81365 cf3558b Author: bowenjos ¡bowenjos@oregonstate.edu¿
+-Date: Sun Oct 9 22:29:43 2016 -0700                           ﬁxed to be seeded
+-commit bb81365122a69088d250457b8e8619dad651a9ﬀ Author:
+-bowenjos ¡bowenjos@oregonstate.edu¿ Date: Sun Oct 9 22:09:14  each time diﬀer-
+-2016 -0700
+-commit cf3558b7a95a5e2e83e1199c44b618f25f3c569e Author:       ently
+-Mendezc1 ¡mendezc@oregonstate.edu¿ Date: Sun Oct 9 13:54:28
+-2016 -0700                                                    Fixed some syn-
+-
+-commit d6ae8f22080239c8822f358bfe3078b418438bf9 Author:       chonization bugs,
+-Mendezc1 ¡mendezc@oregonstate.edu¿ Date: Sat Oct 8 16:00:47
+-2016 -0700                                                    did some testing
+-
+-commit d5a4e2575a30a0ede00ee5f9d7d73abdba048745 Author:       and seems to work
+-Mendezc1 ¡mendezc@oregonstate.edu¿ Date: Sat Oct 8 12:45:33
+-2016 -0700                                                    Producer and con-
+-commit 5069a6e6078d096d6b8940841cc11469c6c25bdf Author:
+-Mendezc1 ¡mendezc@oregonstate.edu¿ Date: Sat Oct 8 12:22:32   sumer look to be in
+-2016 -0700
+-                                                              sync
+-commit dba844c714e8dc35ab426aeb3385979ﬀ0c5757d Author:
+-Mendezc1 ¡mendezc@oregonstate.edu¿ Date: Sat Oct 8 10:49:02   Producer         and
+-2016 -0700
+-commit 56fde513c508d4eﬀ10114eae119ﬀf6ce69f284 Author:         consumer thread
+-Christopher Mendez ¡mendezc@os-class.engr.oregonstate.edu¿
+-Date: Thu Oct 6 09:36:14 2016 -0700                           added, still working
+-commit d176e591a3fef902715de72d8ac4dc20ae297a87 Author:
+-Christopher Mendez ¡mendezc@os-class.engr.oregonstate.edu¿    on synchronization
+-Date: Thu Oct 6 09:19:29 2016 -0700
+-commit 75b41d8d8be20fdfa5ede595c4b88e39209b8df7 Author:       working          hello
+-Christopher Mendez ¡mendezc@os-class.engr6.oregonstate.edu¿
+-Date: Thu Oct 6 08:56:28 2016 -0700                           threads program
+-
+-                                                              Merging submodule
+-
+-                                                              Added linux yocto
+-                                                              v3.14.26 tag
+-
+-                                                              ﬁrst commit
+-6 Work Log
+-
+-Date        Time              What
+-10/1/2016   10-12             Started assignment, looked into
+-                              qemu emulation and threading,
+-10/6/2016   7:30-8:30, 10-12  got stuck on conﬁguring kernel
+-                              and the producer/consumer rela-
+-10/7/2016   3-4               tionship. Github created
+-                              Got questions answered by
+-10/8/2016   10-1, 2-3         Kevin, started commiting to
+-                              github, however ended up with
+-10/9/2016   10-11, 1-3        an empty directory. Started pro-
+-                              gramming thread program but
+-                              didnt commit because wouldnt
+-                              compile
+-                              Continued working on thread
+-                              program, got it to compile by
+-                              itself but couldnt link it to
+-                              mt19937ar.c so randomization
+-                              didnt work
+-                              Gave up on linking ﬁles, so just
+-                              ended up copy/pasting impor-
+-                              tant parts of mt19937ar.c into
+-                              concurrency.c. Looked on course
+-                              website and found ﬁles that
+-                              helped a lot with the threading
+-                              assignment. Implemented con-
+-                              currency solution, tested it and
+-                              it seemed to work except the ran-
+-                              domization wasnt being random.
+-                              Fixed randomization problem,
+-                              looked into rdrand but no
+-                              progress made on it. Began
+-                              writeup.
+-
+-                              7
+-
+\ No newline at end of file
+diff --git a/Assignment1/Assignment1.tar.gz b/Assignment1/Assignment1.tar.gz
+deleted file mode 100644
+index 5553ca1..0000000
+Binary files a/Assignment1/Assignment1.tar.gz and /dev/null differ
+diff --git a/Assignment1/Assignment1.tex b/Assignment1/Assignment1.tex
+deleted file mode 100644
+index 2601fae..0000000
+--- a/Assignment1/Assignment1.tex
++++ /dev/null
+@@ -1,361 +0,0 @@
+-\documentclass[letterpaper,10pt,titlepage]{article}
+-
+-\usepackage{graphicx}                                        
+-\usepackage{amssymb}                                         
+-\usepackage{amsmath}                                         
+-\usepackage{amsthm}                                          
+-
+-\usepackage{alltt}                                           
+-\usepackage{float}
+-\usepackage{color}
+-\usepackage{url}
+-
+-\usepackage{balance}
+-\usepackage[TABBOTCAP, tight]{subfigure}
+-\usepackage{enumitem}
+-\usepackage{pstricks, pst-node}
+-
+-\usepackage{geometry}
+-\usepackage{listings}  
+-\lstset{language=C}
+-\geometry{textheight=8.5in, textwidth=6in}
+-
+-%random comment
+-
+-\newcommand{\cred}[1]{{\color{red}#1}}
+-\newcommand{\cblue}[1]{{\color{blue}#1}}
+-
+-\usepackage{hyperref}
+-\usepackage{geometry}
+-
+-\def\name{Christopher Mendez, Joshua Bowen}
+-
+-
+-%% The following metadata will show up in the PDF properties
+-\hypersetup{
+-  colorlinks = true,
+-  urlcolor = black,
+-  pdfauthor = {\name},
+-  pdfkeywords = {cs444 },
+-  pdftitle = {CS 444 Project 1: Concurrency},
+-  pdfsubject = {CS 444 Project 1},
+-  pdfpagemode = UseNone
+-}
+-
+-\begin{document}
+-Assignment 1, CS444
+-Christopher Mendez, Joshua Bowen
+-
+-
+-
+-\section{Command Line Commands}
+-\subsection{In First Terminal}
+-\begin{itemize}
+-\item git clone --branch v3.14.26 git://git.yoctoproject.org/linux-yocto-3.14
+-\item source /scratch/opt/environment-setup-i586-poky-linux.csh
+-\item \sloppy qemu-system-i386 -gdb tcp::???? -S -nographic -kernel bzImage-qemux86.bin -drive file=core-image-lsb-sdk-qemux86.ext3,if=virtio -enable-kvm -net none -usb -localtime --no-reboot --append "root=/dev/vda rw console=ttyS0 debug"
+-\item Make -j4 all
+-\end{itemize}
+-\subsection{In Second Terminal}
+-\begin{itemize}
+-\item gdb
+-\item file vmlinux
+-\item target remote :5520
+-\item make linux --menuconfig
+-\end{itemize}
+-
+-\section{Concurrency Write-Up}
+-
+-\sloppy Our concurrency solution involved using threads with mutex’s for synchronization. 
+-\begin{lstlisting}
+-pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
+-\end{lstlisting}
+-When the program is started, it creates the specified number of consumer threads using a loop. Each of these consumers when created is given a value between 0-31 and checks that element in the array in a loop until it has been filled with a number that is between 2 and 9. 
+-\begin{lstlisting}
+-	long j = 0;
+-	for(long i = 0; i < atoi(argv[1]); ++i){
+-		pthread_create(&(threads[i]),
+-		               NULL,
+-		               consumer,
+-		               (void *)( &a[j]));
+-		j++;
+-		if(i==32){
+-			j = 0;
+-		}	
+-	}
+-\end{lstlisting}
+-The consumer then grabs locks on the mutex and modifies the buffer, removing the values at that element. It then unlocks and sleeps for the specified time, then prints the values. \begin{lstlisting}
+-void *consumer(void *tid)
+-{
+-	struct args *a = (struct args*)tid;
+-	while(1){		
+-		if (a->sleep_time<10 && a->sleep_time>1 && a->tid > -1 && a->tid <32){
+-			pthread_mutex_lock (&mymutex);
+-			long conSleepTime = a->sleep_time;
+-			long conTid = a->tid;
+-			a->sleep_time = -1;
+-			a->tid = -1;
+-			pthread_mutex_unlock (&mymutex);
+-			sleep(conSleepTime);
+-		return (void *)printf("Hello from thread %ld! I did %ld units of work!\n", conTid, conSleepTime);
+-		}
+-	}
+-
+-}
+-\end{lstlisting}
+-Meanwhile the producer(which is just a loop in the main function not a separate thread) goes between 0-31 (and if there are more consumers specified it starts back at 0) and takes the mutex locks, and fills in one of the elements in the buffer. After that it releases its locks and sleeps for 3-7 seconds before printing what it just did and repeating. 
+-\begin{lstlisting}
+-	for(long i = 0; i < atoi(argv[1]); ++i){
+-		pthread_mutex_lock (&mymutex);
+-		a[i].tid = i;
+- 		long consumerSleep = genrand_int32() % 8;
+-		a[i].sleep_time = consumerSleep+2;
+-
+-		pthread_mutex_unlock(&mymutex);
+-		if(mt == 1){
+-			long sleepTime = genrand_int32()%5;
+-			sleep(sleepTime+2);
+-		printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
+-		}
+-		else{
+-			long sleepTime = 1;//rdrand code here
+-			sleep(sleepTime+2);
+-		printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
+-		}
+-		if(i==31){
+-			i = 0;
+-		}
+-	}
+-\end{lstlisting}
+-\section{Qemu Flags}
+-
+-\begin{itemize}
+-\item gdb tcp::55020
+-\end{itemize}
+-
+-open a gdbserver on TCP port 55020
+-
+-\begin{itemize}
+-\item S
+-\end{itemize}
+-
+-Do not start CPU at startup (you must type ’c’ in the monitor)
+-
+-\begin{itemize}
+-\item nographic 
+-\end{itemize}
+-
+-\sloppy Normally, QEMU uses SDL to display the VGA output. With this option, you can totally disable graphical output so that QEMU is a simple command line application. The emulated serial port is redirected on the console and muxed with the monitor (unless redirected elsewhere explicitly). Therefore, you can still use QEMU to debug a Linux kernel with a serial console. 
+-
+-\begin{itemize}
+-\item kernel bzImage-qemux86.bin 
+-\end{itemize}
+-
+-Use bzImage as kernel image
+-
+-\begin{itemize}
+-\item drive file=core-image-lsb-sdk-qemux86.ext3, 
+-\end{itemize}
+-
+-A way to boot other than from a CD-ROM
+-
+-\begin{itemize}
+-\item if=virtio 
+-\end{itemize}
+-
+-Check for virtio driver. If this is there we can boot KVM
+-
+-\begin{itemize}
+-\item enable-kvm  
+-\end{itemize}
+-
+-Enable KVM full virtualization support. This option is only available if KVM support is enabled when compiling.
+-
+-\begin{itemize}
+-\item net none 
+-\end{itemize}
+-
+- \sloppy Indicate that no network devices should be configured. It is used to override the default configuration (-net nic -net user) which is activated if no -net options are provided. 
+-
+-\begin{itemize}
+-\item usb 
+-\end{itemize}
+-
+-Add the USB device
+-
+-\begin{itemize}
+-\item localtime 
+-\end{itemize}
+-
+-Use local time
+-
+-\begin{itemize}
+-\item no-reboot 
+-\end{itemize}
+-
+-Exit instead of rebooting.
+-
+-\begin{itemize}
+-\item append "root=/dev/vda rw console=ttyS0 debug" 
+-\end{itemize}
+-
+-Give the kernel command line arguments
+-
+-\section{Questions}
+-\subsection{What do you think the main point of this assignment is?}
+-
+- \sloppy Set us up for success in future assignments. This assignment toured a lot of class resources, using tophat, the qemu documentation and the course webpage for tutorials and templates; using Kevin to answer any wording questions; learning git, LaTeX and how to start the kernel, and ensuring we could start and run some c code on os-class. Instead of having students meltdown and panic on harder assignments because they didn’t understand how to make use of these tools, this hopefully gets some of the learning curve out of the way.
+-
+-\subsection{How did you personally approach the problem? Design decisions, algorithm, etc.}
+-
+- \sloppy Upon learning the assignment was to use pthreads I figured mutexes were the way to go because they are straightforward, would meet the synchronization constraints and I am familiar with them from CS344. The way I decided to use mutexes was to lock anytime I was going to modify the shared array, store any values I needed locally, and then unlock. I didn’t look for the times I would check to see what values were in the array as I didn’t see this as a danger as it didn’t involve modifying the memory. A decision made poorly early on was to try to make the producers and consumers their own threads. It took about an hour and a half of doing this to realize that by having a producer thread for each consumer I was making things far more complicated than need be. Instead having a for loop to generate the values works just and was simpler to implement. After I fixed this everything else fell into place.
+-
+-\subsection{How did you ensure your solution was correct? Testing details, for instance.}
+-
+- \sloppy To see if the consumer/producers first I disabled the consumer sleep statement, so they wouldn’t sleep at all. Then I gave the producers a sleep time of 5, and ran a stopwatch to see if the program took ~25 seconds to finish with 5 consumers. Then reversed it so the producers produced without sleeping but the consumers had 5 second sleeptime. This told me that the producers and consumers didn’t step over themselves and that the locks worked. To ensure they didn’t step over each other I tried some other values. For example if both producers and consumers sleep for 3 seconds, then they should print at almost the same time, whereas if they are staggered so that producers sleep for 3 seconds and consumers for 6, than 2 items should be produced in the time one is consumed. All of this worked as expected brought back the randomized statements and tested for a variety of numbers, up to 50.
+-
+-\subsection{What did you learn?}
+-
+-Shallow knowledge about git, qemu and LaTeX. How to get help from Kevin, tophat and the course webpage. Refreshed on C, pthreads and synchronization. 
+-\section {Git History}
+-\begin{tabular}{ |p{10cm}|p{3cm}| } 
+- \hline
+-Commit & Message \\
+-\hline
+-commit 0107728d1077ed6a170639b50df4e6f4957ecb31
+-Author: bowenjos <bowenjos@oregonstate.edu>
+-Date:   Sun Oct 9 22:38:17 2016 -0700
+-&
+-    Yocto Files for real this time\\
+-\hline
+-
+-commit cea3cb9b6a16439e04d0e9ac819ce772572604bf
+-Author: bowenjos <bowenjos@oregonstate.edu>
+-Date:   Sun Oct 9 22:31:38 2016 -0700
+-&
+-    Yocto Files 2.0\\
+-\hline
+-
+-commit 2ece0dbd261eeb9954157e887db67f0f582d5d44
+-Merge: bb81365 cf3558b
+-Author: bowenjos <bowenjos@oregonstate.edu>
+-Date:   Sun Oct 9 22:29:43 2016 -0700
+-&
+-    Yocto Files\\
+-\hline
+-
+-commit bb81365122a69088d250457b8e8619dad651a9ff
+-Author: bowenjos <bowenjos@oregonstate.edu>
+-Date:   Sun Oct 9 22:09:14 2016 -0700
+-&
+-:...skipping...\\
+-\hline
+-
+-commit 0107728d1077ed6a170639b50df4e6f4957ecb31
+-Author: bowenjos <bowenjos@oregonstate.edu>
+-Date:   Sun Oct 9 22:38:17 2016 -0700
+-&
+-    Yocto Files for real this time\\
+-\hline
+-
+-commit cea3cb9b6a16439e04d0e9ac819ce772572604bf
+-Author: bowenjos <bowenjos@oregonstate.edu>
+-Date:   Sun Oct 9 22:31:38 2016 -0700
+-&
+-    Yocto Files 2.0\\
+-\hline
+-
+-commit 2ece0dbd261eeb9954157e887db67f0f582d5d44
+-Merge: bb81365 cf3558b
+-Author: bowenjos <bowenjos@oregonstate.edu>
+-Date:   Sun Oct 9 22:29:43 2016 -0700
+-&
+-    Yocto Files\\
+-\hline
+-
+-commit bb81365122a69088d250457b8e8619dad651a9ff
+-Author: bowenjos <bowenjos@oregonstate.edu>
+-Date:   Sun Oct 9 22:09:14 2016 -0700
+-&
+-    Yocto Files\\
+-\hline
+-
+-commit cf3558b7a95a5e2e83e1199c44b618f25f3c569e
+-Author: Mendezc1 <mendezc@oregonstate.edu>
+-Date:   Sun Oct 9 13:54:28 2016 -0700
+-&
+-    Randomization fixed to be seeded each time differently\\
+-\hline
+-
+-commit d6ae8f22080239c8822f358bfe3078b418438bf9
+-Author: Mendezc1 <mendezc@oregonstate.edu>
+-Date:   Sat Oct 8 16:00:47 2016 -0700
+-&
+-    Fixed some synchonization bugs, did some testing and seems to work\\
+-\hline
+-
+-commit d5a4e2575a30a0ede00ee5f9d7d73abdba048745
+-Author: Mendezc1 <mendezc@oregonstate.edu>
+-Date:   Sat Oct 8 12:45:33 2016 -0700
+-&
+-    Producer and consumer look to be in sync\\
+-\hline
+-
+-commit 5069a6e6078d096d6b8940841cc11469c6c25bdf
+-Author: Mendezc1 <mendezc@oregonstate.edu>
+-Date:   Sat Oct 8 12:22:32 2016 -0700
+-&
+-    Producer and consumer thread added, still working on synchronization\\
+-\hline
+-
+-commit dba844c714e8dc35ab426aeb3385979ff0c5757d
+-Author: Mendezc1 <mendezc@oregonstate.edu>
+-Date:   Sat Oct 8 10:49:02 2016 -0700
+-&
+-    working hello threads program\\
+-\hline
+-
+-commit 56fde513c508d4eff10114eae119fff6ce69f284
+-Author: Christopher Mendez <mendezc@os-class.engr.oregonstate.edu>
+-Date:   Thu Oct 6 09:36:14 2016 -0700
+-&
+-    Merging submodule\\
+-\hline
+-
+-commit d176e591a3fef902715de72d8ac4dc20ae297a87
+-Author: Christopher Mendez <mendezc@os-class.engr.oregonstate.edu>
+-Date:   Thu Oct 6 09:19:29 2016 -0700
+-&
+-    Added linux yocto v3.14.26 tag\\
+-\hline
+-
+-commit 75b41d8d8be20fdfa5ede595c4b88e39209b8df7
+-Author: Christopher Mendez <mendezc@os-class.engr.oregonstate.edu>
+-Date:   Thu Oct 6 08:56:28 2016 -0700
+-&
+-    first commit\\
+- \hline
+-\end{tabular}
+-
+-\section{Work Log}
+-\begin{tabular}{ |p{3cm}|p{3cm}|p{5cm}| } 
+- \hline
+-
+-
+-Date & Time & What \\
+-\hline
+-10/1/2016& 10-12&Started assignment, looked into qemu emulation and threading, got stuck on configuring kernel and the producer/consumer relationship. Github created \\
+- \hline
+-10/6/2016& 7:30-8:30, 10-12&Got questions answered by Kevin, started commiting to github, however ended up with an empty directory. Started programming thread program but didn’t commit because wouldn’t compile \\
+- \hline
+-10/7/2016 & 3-4 & Continued working on thread program, got it to compile by itself but couldn’t link it to mt19937ar.c so randomization didn’t work \\
+- \hline
+-10/8/2016&10-1, 2-3 & Gave up on linking files, so just ended up copy/pasting important parts of mt19937ar.c into concurrency.c. Looked on course website and found files that helped a lot with the threading assignment. Implemented concurrency solution, tested it and it seemed to work except the randomization wasn’t being random. \\
+- \hline
+-10/9/2016 & 10-11, 1-3 & Fixed randomization problem, looked into rdrand but no progress made on it. Began writeup. \\
+- \hline
+-
+- \hline
+-\end{tabular}
+-
+-\end{document}
+diff --git a/Assignment1/Makefile b/Assignment1/Makefile
+deleted file mode 100644
+index beea904..0000000
+--- a/Assignment1/Makefile
++++ /dev/null
+@@ -1,12 +0,0 @@
+-
+-
+-pdf:
+-	pdflatex Assignment1.tex	
+-
+-all: pdf
+-
+-clean:
+-	rm -f *.pdf *.ps *.dvi *.out *.log *.aux *.bbl *.blg *.pyg
+-
+-.PHONY: all show clean ps pdf showps
+-
+diff --git a/Assignment1/a.out b/Assignment1/a.out
+deleted file mode 100644
+index ed8f2c7..0000000
+Binary files a/Assignment1/a.out and /dev/null differ
+diff --git a/Assignment1/concurrency.c b/Assignment1/concurrency.c
+deleted file mode 100644
+index 1df3467..0000000
+--- a/Assignment1/concurrency.c
++++ /dev/null
+@@ -1,261 +0,0 @@
+-#include <stdio.h>
+-#include <unistd.h>
+-#include <stdlib.h>
+-#include <pthread.h>
+-
+-#include "mt.h"
+-/* Period parameters */  
+-#define N 624
+-#define M 397
+-#define MATRIX_A 0x9908b0dfUL   /* constant vector a */
+-#define UPPER_MASK 0x80000000UL /* most significant w-r bits */
+-#define LOWER_MASK 0x7fffffffUL /* least significant r bits */
+-
+-
+-
+-pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
+-struct args{
+-	long tid;
+-	long sleep_time;
+-};
+-
+-static unsigned long mt[N]; /* the array for the state vector  */
+-static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
+-
+-/* initializes mt[N] with a seed */
+-void init_genrand(unsigned long s)
+-{
+-    mt[0]= s & 0xffffffffUL;
+-    for (mti=1; mti<N; mti++) {
+-        mt[mti] = 
+-	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+-        /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
+-        /* In the previous versions, MSBs of the seed affect   */
+-        /* only MSBs of the array mt[].                        */
+-        /* 2002/01/09 modified by Makoto Matsumoto             */
+-        mt[mti] &= 0xffffffffUL;
+-        /* for >32 bit machines */
+-    }
+-}
+-
+-/* slight change for C++, 2004/2/26 */
+-void init_by_array(unsigned long init_key[], int key_length)
+-{
+-    int i, j, k;
+-    init_genrand(19650218UL);
+-    i=1; j=0;
+-    k = (N>key_length ? N : key_length);
+-    for (; k; k--) {
+-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
+-          + init_key[j] + j; /* non linear */
+-        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+-        i++; j++;
+-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
+-        if (j>=key_length) j=0;
+-    }
+-    for (k=N-1; k; k--) {
+-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
+-          - i; /* non linear */
+-        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+-        i++;
+-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
+-    }
+-
+-    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */ 
+-}
+-
+-
+-/* generates a random number on [0,0xffffffff]-interval */
+-unsigned long genrand_int32(void)
+-{
+-    unsigned long y;
+-    static unsigned long mag01[2]={0x0UL, MATRIX_A};
+-    /* mag01[x] = x * MATRIX_A  for x=0,1 */
+-
+-    if (mti >= N) { /* generate N words at one time */
+-        int kk;
+-
+-        if (mti == N+1)   /* if init_genrand() has not been called, */
+-            init_genrand(5489UL); /* a default initial seed is used */
+-
+-        for (kk=0;kk<N-M;kk++) {
+-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+-            mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+-        }
+-        for (;kk<N-1;kk++) {
+-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+-            mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+-        }
+-        y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
+-        mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+-
+-        mti = 0;
+-    }
+-  
+-    y = mt[mti++];
+-
+-    /* Tempering */
+-    y ^= (y >> 11);
+-    y ^= (y << 7) & 0x9d2c5680UL;
+-    y ^= (y << 15) & 0xefc60000UL;
+-    y ^= (y >> 18);
+-
+-    return y;
+-}
+-
+-/* generates a random number on [0,0x7fffffff]-interval */
+-long genrand_int31(void)
+-{
+-    return (long)(genrand_int32()>>1);
+-}
+-
+-/* generates a random number on [0,1]-real-interval */
+-double genrand_real1(void)
+-{
+-    return genrand_int32()*(1.0/4294967295.0); 
+-    /* divided by 2^32-1 */ 
+-}
+-
+-/* generates a random number on [0,1)-real-interval */
+-double genrand_real2(void)
+-{
+-    return genrand_int32()*(1.0/4294967296.0); 
+-    /* divided by 2^32 */
+-}
+-
+-/* generates a random number on (0,1)-real-interval */
+-double genrand_real3(void)
+-{
+-    return (((double)genrand_int32()) + 0.5)*(1.0/4294967296.0); 
+-    /* divided by 2^32 */
+-}
+-
+-/* generates a random number on [0,1) with 53-bit resolution*/
+-double genrand_res53(void) 
+-{ 
+-    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6; 
+-    return(a*67108864.0+b)*(1.0/9007199254740992.0); 
+-}
+-void *consumer(void *tid)
+-{
+-//	printf("trying to lock from a consumer thread \n");
+-	struct args *a = (struct args*)tid;
+-	while(1){		
+-		if (a->sleep_time<10 && a->sleep_time>1 && a->tid > -1 && a->tid <32){
+-			pthread_mutex_lock (&mymutex);
+-//	printf("Consumer Sleeptime %ld\n", a->sleep_time);
+-			long conSleepTime = a->sleep_time;
+-			long conTid = a->tid;
+-			a->sleep_time = -1;
+-			a->tid = -1;
+-			pthread_mutex_unlock (&mymutex);
+-			sleep(conSleepTime);
+-			return (void *)	printf("Hello from thread %ld! I did %ld units of work!\n", conTid, conSleepTime);
+-//	return (void *)printf("stopping consumer\n");
+-		}
+-	}
+-
+-}
+-/*
+-void *producer(void *tid){
+-	pthread_mutex_lock (&mymutex);
+-	long producer_sleep = genrand_int32() % 5;
+-	printf("producersleep %ld\n",  producer_sleep+2);
+-	sleep(producer_sleep);
+-	struct args *a = (struct args*)tid;
+-	a->sleep_time = genrand_int32() % 10;
+-	pthread_mutex_unlock (&mymutex);
+-	return (void*) printf("Stopping producer\n");
+-
+-}*/
+-
+-int main(int argc, char **argv)
+-{
+-	unsigned long init[4] = {0x123, 0x234, 0x345, 0x456};
+-	unsigned long length = 4;
+-	int mt = 0;
+-	printf("Number of consumers to be created %s \n", argv[1]);
+-	
+-	unsigned int eax;
+-	unsigned int ebx;
+-	unsigned int ecx;
+-	unsigned int edx;
+-
+-	char vendor[13];
+-	
+-	eax = 0x01;
+-
+-	__asm__ __volatile__(
+-	                     "cpuid;"
+-	                     : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+-	                     : "a"(eax)
+-	                     );
+-	
+-	if(ecx & 0x40000000){
+-		//use rdrand
+-	//	rdrand_32(int, int);
+-
+-	}
+-	else{
+-		//use mt19937
+-		//init_by_array(init, length);
+-		mt = 1;
+-		time_t t;
+-		init_genrand((unsigned) time(&t));	
+-	}
+-	
+-	pthread_t threads[atoi(argv[1])];
+-	struct args a[atoi(argv[1])];
+-	//for(long j = 0; j < 32; j++){
+-//		pthread_mutex_lock (&mymutex);
+-	//	a[j].sleep_time = 100;
+-	//	a[j].tid = j;
+-//		pthread_mutex_unlock(&mymutex);
+-//	}
+-	long j = 0;
+-	for(long i = 0; i < atoi(argv[1]); ++i){
+-		/* int pthread_create(pthread_t *thread, const pthread_attr_t *attr, */
+-		/*                    void *(*start_routine) (void *), void *arg); */
+-		//		a[i].tid = i;
+-//		pthread_create(&threads[0], NULL, producer, (void *)( &a[i]));
+-		pthread_create(&(threads[i]),
+-		               NULL,
+-		               consumer,
+-		               (void *)( &a[j]));
+-		j++;
+-		if(i==32){
+-			j = 0;
+-		}	
+-	}
+-	for(long i = 0; i < atoi(argv[1]); ++i){
+-		pthread_mutex_lock (&mymutex);
+-		a[i].tid = i;
+- 		long consumerSleep = genrand_int32() % 8;
+-		a[i].sleep_time = consumerSleep+2;
+-//		printf("Current buffer: \n");
+-//		for(int j = 0; j < 32; j++){
+-//			if(a[j].sleep_time < 10 && a[j].sleep_time > 0){
+-//				printf("%ld : %ld \n", a[j].tid, a[j].sleep_time);
+-//			}
+-//		}
+-		pthread_mutex_unlock(&mymutex);
+-		if(mt == 1){
+-			long sleepTime = genrand_int32()%5;
+-			sleep(sleepTime+2);
+-			printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
+-		}
+-		else{
+-			long sleepTime = 1;//rdrand code here
+-			sleep(sleepTime+2);
+-			printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
+-		}
+-		if(i==31){
+-			i = 0;
+-		}
+-	}
+-	for(long i = 0; i < atoi(argv[1]); ++i){
+-		pthread_join(threads[i], NULL);
+-	}
+-	
+-	return 0;
+-}
+diff --git a/Assignment1/mt19937ar.c b/Assignment1/mt19937ar.c
+deleted file mode 100644
+index f1f483d..0000000
+--- a/Assignment1/mt19937ar.c
++++ /dev/null
+@@ -1,189 +0,0 @@
+-/* 
+-   A C-program for MT19937, with initialization improved 2002/1/26.
+-   Coded by Takuji Nishimura and Makoto Matsumoto.
+-
+-   Before using, initialize the state by using init_genrand(seed)  
+-   or init_by_array(init_key, key_length).
+-
+-   Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
+-   All rights reserved.                          
+-
+-   Redistribution and use in source and binary forms, with or without
+-   modification, are permitted provided that the following conditions
+-   are met:
+-
+-     1. Redistributions of source code must retain the above copyright
+-        notice, this list of conditions and the following disclaimer.
+-
+-     2. Redistributions in binary form must reproduce the above copyright
+-        notice, this list of conditions and the following disclaimer in the
+-        documentation and/or other materials provided with the distribution.
+-
+-     3. The names of its contributors may not be used to endorse or promote 
+-        products derived from this software without specific prior written 
+-        permission.
+-
+-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+-   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+-   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
+-
+-   Any feedback is very welcome.
+-   http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
+-   email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
+-*/
+-
+-#include <stdio.h>
+-/* Period parameters */  
+-#define N 624
+-#define M 397
+-#define MATRIX_A 0x9908b0dfUL   /* constant vector a */
+-#define UPPER_MASK 0x80000000UL /* most significant w-r bits */
+-#define LOWER_MASK 0x7fffffffUL /* least significant r bits */
+-
+-static unsigned long mt[N]; /* the array for the state vector  */
+-static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
+-
+-/* initializes mt[N] with a seed */
+-void init_genrand(unsigned long s)
+-{
+-    mt[0]= s & 0xffffffffUL;
+-    for (mti=1; mti<N; mti++) {
+-        mt[mti] = 
+-	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+-        /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
+-        /* In the previous versions, MSBs of the seed affect   */
+-        /* only MSBs of the array mt[].                        */
+-        /* 2002/01/09 modified by Makoto Matsumoto             */
+-        mt[mti] &= 0xffffffffUL;
+-        /* for >32 bit machines */
+-    }
+-}
+-
+-/* initialize by an array with array-length */
+-/* init_key is the array for initializing keys */
+-/* key_length is its length */
+-/* slight change for C++, 2004/2/26 */
+-void init_by_array(unsigned long init_key[], int key_length)
+-{
+-    int i, j, k;
+-    init_genrand(19650218UL);
+-    i=1; j=0;
+-    k = (N>key_length ? N : key_length);
+-    for (; k; k--) {
+-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
+-          + init_key[j] + j; /* non linear */
+-        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+-        i++; j++;
+-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
+-        if (j>=key_length) j=0;
+-    }
+-    for (k=N-1; k; k--) {
+-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
+-          - i; /* non linear */
+-        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+-        i++;
+-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
+-    }
+-
+-    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */ 
+-}
+-
+-/* generates a random number on [0,0xffffffff]-interval */
+-unsigned long genrand_int32(void)
+-{
+-    unsigned long y;
+-    static unsigned long mag01[2]={0x0UL, MATRIX_A};
+-    /* mag01[x] = x * MATRIX_A  for x=0,1 */
+-
+-    if (mti >= N) { /* generate N words at one time */
+-        int kk;
+-
+-        if (mti == N+1)   /* if init_genrand() has not been called, */
+-            init_genrand(5489UL); /* a default initial seed is used */
+-
+-        for (kk=0;kk<N-M;kk++) {
+-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+-            mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+-        }
+-        for (;kk<N-1;kk++) {
+-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+-            mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+-        }
+-        y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
+-        mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+-
+-        mti = 0;
+-    }
+-  
+-    y = mt[mti++];
+-
+-    /* Tempering */
+-    y ^= (y >> 11);
+-    y ^= (y << 7) & 0x9d2c5680UL;
+-    y ^= (y << 15) & 0xefc60000UL;
+-    y ^= (y >> 18);
+-
+-    return y;
+-}
+-
+-/* generates a random number on [0,0x7fffffff]-interval */
+-long genrand_int31(void)
+-{
+-    return (long)(genrand_int32()>>1);
+-}
+-
+-/* generates a random number on [0,1]-real-interval */
+-double genrand_real1(void)
+-{
+-    return genrand_int32()*(1.0/4294967295.0); 
+-    /* divided by 2^32-1 */ 
+-}
+-
+-/* generates a random number on [0,1)-real-interval */
+-double genrand_real2(void)
+-{
+-    return genrand_int32()*(1.0/4294967296.0); 
+-    /* divided by 2^32 */
+-}
+-
+-/* generates a random number on (0,1)-real-interval */
+-double genrand_real3(void)
+-{
+-    return (((double)genrand_int32()) + 0.5)*(1.0/4294967296.0); 
+-    /* divided by 2^32 */
+-}
+-
+-/* generates a random number on [0,1) with 53-bit resolution*/
+-double genrand_res53(void) 
+-{ 
+-    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6; 
+-    return(a*67108864.0+b)*(1.0/9007199254740992.0); 
+-} 
+-/* These real versions are due to Isaku Wada, 2002/01/09 added */
+-
+-int main(void)
+-{
+-    int i;
+-    unsigned long init[4]={0x123, 0x234, 0x345, 0x456}, length=4;
+-    init_by_array(init, length);
+-    printf("1000 outputs of genrand_int32()\n");
+-    for (i=0; i<1000; i++) {
+-      printf("%10lu ", genrand_int32());
+-      if (i%5==4) printf("\n");
+-    }
+-    printf("\n1000 outputs of genrand_real2()\n");
+-    for (i=0; i<1000; i++) {
+-      printf("%10.8f ", genrand_real2());
+-      if (i%5==4) printf("\n");
+-    }
+-    return 0;
+-}
+diff --git a/concurrency.c b/concurrency.c
+new file mode 100644
+index 0000000..1df3467
+--- /dev/null
++++ b/concurrency.c
+@@ -0,0 +1,261 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <stdlib.h>
++#include <pthread.h>
++
++#include "mt.h"
++/* Period parameters */  
++#define N 624
++#define M 397
++#define MATRIX_A 0x9908b0dfUL   /* constant vector a */
++#define UPPER_MASK 0x80000000UL /* most significant w-r bits */
++#define LOWER_MASK 0x7fffffffUL /* least significant r bits */
++
++
++
++pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
++struct args{
++	long tid;
++	long sleep_time;
++};
++
++static unsigned long mt[N]; /* the array for the state vector  */
++static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
++
++/* initializes mt[N] with a seed */
++void init_genrand(unsigned long s)
++{
++    mt[0]= s & 0xffffffffUL;
++    for (mti=1; mti<N; mti++) {
++        mt[mti] = 
++	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
++        /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
++        /* In the previous versions, MSBs of the seed affect   */
++        /* only MSBs of the array mt[].                        */
++        /* 2002/01/09 modified by Makoto Matsumoto             */
++        mt[mti] &= 0xffffffffUL;
++        /* for >32 bit machines */
++    }
++}
++
++/* slight change for C++, 2004/2/26 */
++void init_by_array(unsigned long init_key[], int key_length)
++{
++    int i, j, k;
++    init_genrand(19650218UL);
++    i=1; j=0;
++    k = (N>key_length ? N : key_length);
++    for (; k; k--) {
++        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
++          + init_key[j] + j; /* non linear */
++        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
++        i++; j++;
++        if (i>=N) { mt[0] = mt[N-1]; i=1; }
++        if (j>=key_length) j=0;
++    }
++    for (k=N-1; k; k--) {
++        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
++          - i; /* non linear */
++        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
++        i++;
++        if (i>=N) { mt[0] = mt[N-1]; i=1; }
++    }
++
++    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */ 
++}
++
++
++/* generates a random number on [0,0xffffffff]-interval */
++unsigned long genrand_int32(void)
++{
++    unsigned long y;
++    static unsigned long mag01[2]={0x0UL, MATRIX_A};
++    /* mag01[x] = x * MATRIX_A  for x=0,1 */
++
++    if (mti >= N) { /* generate N words at one time */
++        int kk;
++
++        if (mti == N+1)   /* if init_genrand() has not been called, */
++            init_genrand(5489UL); /* a default initial seed is used */
++
++        for (kk=0;kk<N-M;kk++) {
++            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
++            mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1UL];
++        }
++        for (;kk<N-1;kk++) {
++            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
++            mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
++        }
++        y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
++        mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
++
++        mti = 0;
++    }
++  
++    y = mt[mti++];
++
++    /* Tempering */
++    y ^= (y >> 11);
++    y ^= (y << 7) & 0x9d2c5680UL;
++    y ^= (y << 15) & 0xefc60000UL;
++    y ^= (y >> 18);
++
++    return y;
++}
++
++/* generates a random number on [0,0x7fffffff]-interval */
++long genrand_int31(void)
++{
++    return (long)(genrand_int32()>>1);
++}
++
++/* generates a random number on [0,1]-real-interval */
++double genrand_real1(void)
++{
++    return genrand_int32()*(1.0/4294967295.0); 
++    /* divided by 2^32-1 */ 
++}
++
++/* generates a random number on [0,1)-real-interval */
++double genrand_real2(void)
++{
++    return genrand_int32()*(1.0/4294967296.0); 
++    /* divided by 2^32 */
++}
++
++/* generates a random number on (0,1)-real-interval */
++double genrand_real3(void)
++{
++    return (((double)genrand_int32()) + 0.5)*(1.0/4294967296.0); 
++    /* divided by 2^32 */
++}
++
++/* generates a random number on [0,1) with 53-bit resolution*/
++double genrand_res53(void) 
++{ 
++    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6; 
++    return(a*67108864.0+b)*(1.0/9007199254740992.0); 
++}
++void *consumer(void *tid)
++{
++//	printf("trying to lock from a consumer thread \n");
++	struct args *a = (struct args*)tid;
++	while(1){		
++		if (a->sleep_time<10 && a->sleep_time>1 && a->tid > -1 && a->tid <32){
++			pthread_mutex_lock (&mymutex);
++//	printf("Consumer Sleeptime %ld\n", a->sleep_time);
++			long conSleepTime = a->sleep_time;
++			long conTid = a->tid;
++			a->sleep_time = -1;
++			a->tid = -1;
++			pthread_mutex_unlock (&mymutex);
++			sleep(conSleepTime);
++			return (void *)	printf("Hello from thread %ld! I did %ld units of work!\n", conTid, conSleepTime);
++//	return (void *)printf("stopping consumer\n");
++		}
++	}
++
++}
++/*
++void *producer(void *tid){
++	pthread_mutex_lock (&mymutex);
++	long producer_sleep = genrand_int32() % 5;
++	printf("producersleep %ld\n",  producer_sleep+2);
++	sleep(producer_sleep);
++	struct args *a = (struct args*)tid;
++	a->sleep_time = genrand_int32() % 10;
++	pthread_mutex_unlock (&mymutex);
++	return (void*) printf("Stopping producer\n");
++
++}*/
++
++int main(int argc, char **argv)
++{
++	unsigned long init[4] = {0x123, 0x234, 0x345, 0x456};
++	unsigned long length = 4;
++	int mt = 0;
++	printf("Number of consumers to be created %s \n", argv[1]);
++	
++	unsigned int eax;
++	unsigned int ebx;
++	unsigned int ecx;
++	unsigned int edx;
++
++	char vendor[13];
++	
++	eax = 0x01;
++
++	__asm__ __volatile__(
++	                     "cpuid;"
++	                     : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
++	                     : "a"(eax)
++	                     );
++	
++	if(ecx & 0x40000000){
++		//use rdrand
++	//	rdrand_32(int, int);
++
++	}
++	else{
++		//use mt19937
++		//init_by_array(init, length);
++		mt = 1;
++		time_t t;
++		init_genrand((unsigned) time(&t));	
++	}
++	
++	pthread_t threads[atoi(argv[1])];
++	struct args a[atoi(argv[1])];
++	//for(long j = 0; j < 32; j++){
++//		pthread_mutex_lock (&mymutex);
++	//	a[j].sleep_time = 100;
++	//	a[j].tid = j;
++//		pthread_mutex_unlock(&mymutex);
++//	}
++	long j = 0;
++	for(long i = 0; i < atoi(argv[1]); ++i){
++		/* int pthread_create(pthread_t *thread, const pthread_attr_t *attr, */
++		/*                    void *(*start_routine) (void *), void *arg); */
++		//		a[i].tid = i;
++//		pthread_create(&threads[0], NULL, producer, (void *)( &a[i]));
++		pthread_create(&(threads[i]),
++		               NULL,
++		               consumer,
++		               (void *)( &a[j]));
++		j++;
++		if(i==32){
++			j = 0;
++		}	
++	}
++	for(long i = 0; i < atoi(argv[1]); ++i){
++		pthread_mutex_lock (&mymutex);
++		a[i].tid = i;
++ 		long consumerSleep = genrand_int32() % 8;
++		a[i].sleep_time = consumerSleep+2;
++//		printf("Current buffer: \n");
++//		for(int j = 0; j < 32; j++){
++//			if(a[j].sleep_time < 10 && a[j].sleep_time > 0){
++//				printf("%ld : %ld \n", a[j].tid, a[j].sleep_time);
++//			}
++//		}
++		pthread_mutex_unlock(&mymutex);
++		if(mt == 1){
++			long sleepTime = genrand_int32()%5;
++			sleep(sleepTime+2);
++			printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
++		}
++		else{
++			long sleepTime = 1;//rdrand code here
++			sleep(sleepTime+2);
++			printf("Producer just slept for: %ld and filled tid %ld\n", sleepTime+2, i);	
++		}
++		if(i==31){
++			i = 0;
++		}
++	}
++	for(long i = 0; i < atoi(argv[1]); ++i){
++		pthread_join(threads[i], NULL);
++	}
++	
++	return 0;
++}
+diff --git a/mt19937ar.c b/mt19937ar.c
+new file mode 100755
+index 0000000..f1f483d
+--- /dev/null
++++ b/mt19937ar.c
+@@ -0,0 +1,189 @@
++/* 
++   A C-program for MT19937, with initialization improved 2002/1/26.
++   Coded by Takuji Nishimura and Makoto Matsumoto.
++
++   Before using, initialize the state by using init_genrand(seed)  
++   or init_by_array(init_key, key_length).
++
++   Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
++   All rights reserved.                          
++
++   Redistribution and use in source and binary forms, with or without
++   modification, are permitted provided that the following conditions
++   are met:
++
++     1. Redistributions of source code must retain the above copyright
++        notice, this list of conditions and the following disclaimer.
++
++     2. Redistributions in binary form must reproduce the above copyright
++        notice, this list of conditions and the following disclaimer in the
++        documentation and/or other materials provided with the distribution.
++
++     3. The names of its contributors may not be used to endorse or promote 
++        products derived from this software without specific prior written 
++        permission.
++
++   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
++   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
++   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
++   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
++   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
++   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
++   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++
++   Any feedback is very welcome.
++   http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
++   email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
++*/
++
++#include <stdio.h>
++/* Period parameters */  
++#define N 624
++#define M 397
++#define MATRIX_A 0x9908b0dfUL   /* constant vector a */
++#define UPPER_MASK 0x80000000UL /* most significant w-r bits */
++#define LOWER_MASK 0x7fffffffUL /* least significant r bits */
++
++static unsigned long mt[N]; /* the array for the state vector  */
++static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
++
++/* initializes mt[N] with a seed */
++void init_genrand(unsigned long s)
++{
++    mt[0]= s & 0xffffffffUL;
++    for (mti=1; mti<N; mti++) {
++        mt[mti] = 
++	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
++        /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
++        /* In the previous versions, MSBs of the seed affect   */
++        /* only MSBs of the array mt[].                        */
++        /* 2002/01/09 modified by Makoto Matsumoto             */
++        mt[mti] &= 0xffffffffUL;
++        /* for >32 bit machines */
++    }
++}
++
++/* initialize by an array with array-length */
++/* init_key is the array for initializing keys */
++/* key_length is its length */
++/* slight change for C++, 2004/2/26 */
++void init_by_array(unsigned long init_key[], int key_length)
++{
++    int i, j, k;
++    init_genrand(19650218UL);
++    i=1; j=0;
++    k = (N>key_length ? N : key_length);
++    for (; k; k--) {
++        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
++          + init_key[j] + j; /* non linear */
++        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
++        i++; j++;
++        if (i>=N) { mt[0] = mt[N-1]; i=1; }
++        if (j>=key_length) j=0;
++    }
++    for (k=N-1; k; k--) {
++        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
++          - i; /* non linear */
++        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
++        i++;
++        if (i>=N) { mt[0] = mt[N-1]; i=1; }
++    }
++
++    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */ 
++}
++
++/* generates a random number on [0,0xffffffff]-interval */
++unsigned long genrand_int32(void)
++{
++    unsigned long y;
++    static unsigned long mag01[2]={0x0UL, MATRIX_A};
++    /* mag01[x] = x * MATRIX_A  for x=0,1 */
++
++    if (mti >= N) { /* generate N words at one time */
++        int kk;
++
++        if (mti == N+1)   /* if init_genrand() has not been called, */
++            init_genrand(5489UL); /* a default initial seed is used */
++
++        for (kk=0;kk<N-M;kk++) {
++            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
++            mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1UL];
++        }
++        for (;kk<N-1;kk++) {
++            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
++            mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
++        }
++        y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
++        mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
++
++        mti = 0;
++    }
++  
++    y = mt[mti++];
++
++    /* Tempering */
++    y ^= (y >> 11);
++    y ^= (y << 7) & 0x9d2c5680UL;
++    y ^= (y << 15) & 0xefc60000UL;
++    y ^= (y >> 18);
++
++    return y;
++}
++
++/* generates a random number on [0,0x7fffffff]-interval */
++long genrand_int31(void)
++{
++    return (long)(genrand_int32()>>1);
++}
++
++/* generates a random number on [0,1]-real-interval */
++double genrand_real1(void)
++{
++    return genrand_int32()*(1.0/4294967295.0); 
++    /* divided by 2^32-1 */ 
++}
++
++/* generates a random number on [0,1)-real-interval */
++double genrand_real2(void)
++{
++    return genrand_int32()*(1.0/4294967296.0); 
++    /* divided by 2^32 */
++}
++
++/* generates a random number on (0,1)-real-interval */
++double genrand_real3(void)
++{
++    return (((double)genrand_int32()) + 0.5)*(1.0/4294967296.0); 
++    /* divided by 2^32 */
++}
++
++/* generates a random number on [0,1) with 53-bit resolution*/
++double genrand_res53(void) 
++{ 
++    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6; 
++    return(a*67108864.0+b)*(1.0/9007199254740992.0); 
++} 
++/* These real versions are due to Isaku Wada, 2002/01/09 added */
++
++int main(void)
++{
++    int i;
++    unsigned long init[4]={0x123, 0x234, 0x345, 0x456}, length=4;
++    init_by_array(init, length);
++    printf("1000 outputs of genrand_int32()\n");
++    for (i=0; i<1000; i++) {
++      printf("%10lu ", genrand_int32());
++      if (i%5==4) printf("\n");
++    }
++    printf("\n1000 outputs of genrand_real2()\n");
++    for (i=0; i<1000; i++) {
++      printf("%10.8f ", genrand_real2());
++      if (i%5==4) printf("\n");
++    }
++    return 0;
++}
+diff --git a/sstf-iosched.c b/sstf-iosched.c
+deleted file mode 100644
+index 373ce19..0000000
+--- a/sstf-iosched.c
++++ /dev/null
+@@ -1,150 +0,0 @@
+-/*
+- * elevator clook
+- */
+-#include <linux/blkdev.h>
+-#include <linux/elevator.h>
+-#include <linux/bio.h>
+-#include <linux/module.h>
+-#include <linux/slab.h>
+-#include <linux/init.h>
+-
+-
+-struct clook_data {
+-	struct list_head queue;
+-};
+-
+-static void clook_merged_requests(struct request_queue *q, struct request *rq,
+-				 struct request *next)
+-{
+-	list_del_init(&next->queuelist);
+-}
+-
+-static int clook_dispatch(struct request_queue *q, int force)
+-{
+-	struct clook_data *nd = q->elevator->elevator_data;
+-
+-	if (!list_empty(&nd->queue)) {
+-		struct request *rq;
+-		rq = list_entry(nd->queue.next, struct request, queuelist);
+-		list_del_init(&rq->queuelist);
+-		elv_dispatch_sort(q, rq);
+-		
+-	
+-		char dir; 
+-		if(rq_data_dir(rq) == READ)
+-			dir = 'R';
+-		else
+-			dir = 'W';
+-		printk(KERN_DEBUG "[CLOOK] dsp %c %lu\n", dir, blk_rq_pos(rq));
+-
+-		return 1;
+-	}
+-	return 0;
+-}
+-
+-static void clook_add_request(struct request_queue *q, struct request *rq)
+-{
+-	struct clook_data *nd = q->elevator->elevator_data;
+-	struct list_head *cur = NULL;
+-	
+-	list_for_each(cur, &nd->queue) {
+-		if(rq_end_sector(list_entry(cur, struct request, queuelist)) > rq_end_sector(rq)) {
+-			break;
+-		}
+-	}
+-	list_add_tail(&rq->queuelist, &nd->queue);
+-	
+-	
+-	char dir; 
+-	if(rq_data_dir(rq) == READ)
+-		dir = 'R';
+-	else
+-		dir = 'W';
+-	printk(KERN_DEBUG "[CLOOK] dsp %c %lu\n", dir, blk_rq_pos(rq));
+-}
+-
+-
+-static struct request *
+-clook_former_request(struct request_queue *q, struct request *rq)
+-{
+-	struct clook_data *nd = q->elevator->elevator_data;
+-
+-	if (rq->queuelist.prev == &nd->queue)
+-		return NULL;
+-	return list_entry(rq->queuelist.prev, struct request, queuelist);
+-}
+-
+-static struct request *
+-clook_latter_request(struct request_queue *q, struct request *rq)
+-{
+-	struct clook_data *nd = q->elevator->elevator_data;
+-
+-	if (rq->queuelist.next == &nd->queue)
+-		return NULL;
+-	return list_entry(rq->queuelist.next, struct request, queuelist);
+-}
+-
+-static int clook_init_queue(struct request_queue *q, struct elevator_type *e)
+-{
+-	struct clook_data *nd;
+-	struct elevator_queue *eq;
+-
+-	eq = elevator_alloc(q, e);
+-	if (!eq)
+-		return -ENOMEM;
+-
+-	nd = kmalloc_node(sizeof(*nd), GFP_KERNEL, q->node);
+-	if (!nd) {
+-		kobject_put(&eq->kobj);
+-		return -ENOMEM;
+-	}
+-	eq->elevator_data = nd;
+-
+-	INIT_LIST_HEAD(&nd->queue);
+-
+-	spin_lock_irq(q->queue_lock);
+-	q->elevator = eq;
+-	spin_unlock_irq(q->queue_lock);
+-	return 0;
+-}
+-
+-static void clook_exit_queue(struct elevator_queue *e)
+-{
+-	struct clook_data *nd = e->elevator_data;
+-
+-	BUG_ON(!list_empty(&nd->queue));
+-	kfree(nd);
+-}
+-
+-
+-static struct elevator_type elevator_clook = {
+-	.ops = {
+-		.elevator_merge_req_fn		= clook_merged_requests,
+-		.elevator_dispatch_fn		= clook_dispatch,
+-		.elevator_add_req_fn		= clook_add_request,
+-		.elevator_former_req_fn		= clook_former_request,
+-		.elevator_latter_req_fn		= clook_latter_request,
+-		.elevator_init_fn		= clook_init_queue,
+-		.elevator_exit_fn		= clook_exit_queue,
+-	},
+-	.elevator_name = "clook",
+-	.elevator_owner = THIS_MODULE,
+-};
+-
+-static int __init clook_init(void)
+-{
+-	return elv_register(&elevator_clook);
+-}
+-
+-static void __exit clook_exit(void)
+-{
+-	elv_unregister(&elevator_clook);
+-}
+-
+-module_init(clook_init);
+-module_exit(clook_exit);
+-
+-
+-MODULE_AUTHOR("Christopher Mendez, Joshua Bowen");
+-MODULE_LICENSE("GPL");
+-MODULE_DESCRIPTION("CLOOK IO scheduler");
