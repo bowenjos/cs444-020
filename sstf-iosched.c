@@ -8,6 +8,7 @@
 #include <linux/slab.h>
 #include <linux/init.h>
 
+
 struct clook_data {
 	struct list_head queue;
 };
@@ -28,14 +29,13 @@ static int clook_dispatch(struct request_queue *q, int force)
 		list_del_init(&rq->queuelist);
 		elv_dispatch_sort(q, rq);
 		
-		
 	
 		char dir; 
 		if(rq_data_dir(rq) == READ)
 			dir = 'R';
 		else
 			dir = 'W';
-		printk("[CLOOK] dsp %c %lu\n", dir, blk_rq_pos(rq));
+		printk(KERN_DEBUG "[CLOOK] dsp %c %lu\n", dir, blk_rq_pos(rq));
 
 		return 1;
 	}
@@ -45,7 +45,8 @@ static int clook_dispatch(struct request_queue *q, int force)
 static void clook_add_request(struct request_queue *q, struct request *rq)
 {
 	struct clook_data *nd = q->elevator->elevator_data;
-
+	struct list_head *cur = NULL;
+	
 	list_for_each(cur, &nd->queue) {
 		if(rq_end_sector(list_entry(cur, struct request, queuelist)) > rq_end_sector(rq)) {
 			break;
@@ -59,8 +60,9 @@ static void clook_add_request(struct request_queue *q, struct request *rq)
 		dir = 'R';
 	else
 		dir = 'W';
-	printk("[CLOOK] dsp %c %lu\n", dir, blk_rq_pos(rq));
+	printk(KERN_DEBUG "[CLOOK] dsp %c %lu\n", dir, blk_rq_pos(rq));
 }
+
 
 static struct request *
 clook_former_request(struct request_queue *q, struct request *rq)
@@ -114,6 +116,7 @@ static void clook_exit_queue(struct elevator_queue *e)
 	kfree(nd);
 }
 
+
 static struct elevator_type elevator_clook = {
 	.ops = {
 		.elevator_merge_req_fn		= clook_merged_requests,
@@ -142,6 +145,6 @@ module_init(clook_init);
 module_exit(clook_exit);
 
 
-MODULE_AUTHOR("Jens Axboe");
+MODULE_AUTHOR("Christopher Mendez, Joshua Bowen");
 MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("No-op IO scheduler");
+MODULE_DESCRIPTION("CLOOK IO scheduler");
