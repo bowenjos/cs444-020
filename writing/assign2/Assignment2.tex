@@ -1,0 +1,169 @@
+\documentclass[letterpaper,10pt,titlepage]{article}
+
+\usepackage{graphicx}                                        
+\usepackage{amssymb}                                         
+\usepackage{amsmath}                                         
+\usepackage{amsthm}                                          
+
+\usepackage{alltt}                                           
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+
+\usepackage{balance}
+\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+
+\usepackage{geometry}
+\usepackage{listings}  
+\lstset{language=C}
+\geometry{textheight=8.5in, textwidth=6in}
+
+%random comment
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+
+\usepackage{hyperref}
+\usepackage{geometry}
+
+\def\name{Christopher Mendez, Joshua Bowen}
+
+
+%% The following metadata will show up in the PDF properties
+\hypersetup{
+  colorlinks = true,
+  urlcolor = black,
+  pdfauthor = {\name},
+  pdfkeywords = {cs444 },
+  pdftitle = {CS 444 Project 2: I/O Elevators},
+  pdfsubject = {CS 444 Project 2},
+  pdfpagemode = UseNone
+}
+
+\begin{document}
+
+\begin{titlepage}
+	\centering
+	\vspace*{4cm}
+	{\scshape\huge Assignment 2: I/O Elevators\par}
+	\vspace{1cm}
+	{\scshape\LARGE CS 444: Operating Systems II\par}
+	\vspace{0.5cm}
+	{\large\bfseries Fall 2016\par}
+	{\large Abstract\par}
+	\vspace {0.5cm}
+		This project involves researching and implementing the LOOK or CLOOK i/o elevators. The goal is to gaina nd understanding of how elevators work inside of an operating system, how they are implemented, and how to debug them. Through work our process of learning and implementing the ioscheduler is shown.
+	\par
+	\vspace{1cm}
+	{\Large\itshape Joshua D. Bowen\par}
+	{\Large\itshape Chris J. Mendez\par}
+	\vfill
+	{\large \today\par}	
+
+\end{titlepage}
+
+Assignment 2, CS444
+Christopher Mendez, Joshua Bowen
+
+
+
+\section{SSTF Design}
+
+Our SSTF design basically consists of keeping track of the head of the queue. We consistently move down the list from one item to the next until it reaches the end. Because the linked list is circular in nature we opted for CLOOK as CLOOK means that we immediately reset to the head which a circular linked list makes easy as it's only one additional step forward. As each item is reached it's added to another queue to be dispatched. The dispatcher checks to make sure the io requests are proper and then completes them and removes them from the circular linked list.
+
+\section{Questions}
+\subsection{What do you think the main point of this assignment is?}
+
+ \sloppy The main point of the assignment was to become familiar with the way files, in this case specifically io elevators, are loaded and processed by the kernel. We got to go hands on with the actual files as part of the kernel and become familiar with how they are structured and written. Additionally we also supposed to become familiar with the qemu man pages and in a way the entire concept of referencing and reading documentation for a large complicated structure like the yocto.
+
+\subsection{How did you personally approach the problem? Design decisions, algorithm, etc.}
+
+ \sloppy We started by doing research into elevator algorithms and specifically into the LOOK and CLOOK elevators. Due to the circular nature of linked lists in the kernel we decided that CLOOK would be the better choice. We decided this because CLOOK wants you to reset to the front of the queue every time, and seeing as the lists are circular in nature this took no extra work beyond what was already happening by traversing down the list.
+ 
+Once we had decided that this was the version of LOOK we wanted to implement we went into the yocto files and found noop-iosched.c. Using noop-iosched.c we created a sstf-iosched.c. Using noop-iosched were familiarized ourselves with how an elevator scheduler was written inside of the kernel. We could see all of the functions that would need to be modified. From there we looked at each function individually and assessed the changes that would need to be made to each to make the scheduler proper.
+
+\subsection{How did you ensure your solution was correct? Testing details, for instance.}
+
+\sloppy We ensured our solution was correct by utilizing kprint and dmessage. Whenever an io process was a read we would also print the content to the terminal. This allowed us to get an idea of where the scheduler was in the list and let us verify that it was acting as it should be. We verify that it's acting as it should by seeieng that the input is getting progressively smaller and then jumps back to a large number.
+
+\subsection{What did you learn?}
+
+\sloppy We learned about different elevator functions that are used to handle io, as well as what a lot of the different qemu flags do in relation to the activating of the OS.
+
+\section {History}
+\subsection {Git Version Control Log}
+\begin{tabular}{ |p{10cm}|p{3cm}| } 
+ \hline
+ Commit & Message \\
+ \hline
+ commit a64c8cf3faf3a2d401c338915d0bf20490664867 (HEAD, master)
+ Author: bowenjos <bowenjos@oregonstate.edu>
+ Date:   Mon Oct 24 15:49:10 2016 -0700
+ &
+     sstf changes 10/24\\
+\hline
+
+commit dc4d711475e92d7481ce2bc8bc4d4dc965b05940
+Merge: d924130 f28ea8a
+Author: Mendezc1 <mendezc@oregonstate.edu>
+Date:   Mon Oct 24 13:36:08 2016 -0700
+&
+     Merge branch 'master' of https://github.com/bowenjos/cs444-020\\
+\hline
+
+commit d924130862dbd358a3bb156ea7632fcf0c26bce8
+Author: Mendezc1 <mendezc@oregonstate.edu>
+Date:   Mon Oct 24 13:36:04 2016 -0700
+&
+     attempting patch\\
+\hline
+
+commit f28ea8a473ea0bec0c156de092cbda96fada9f33 (origin/master, origin/HEAD)
+Merge: 713d43c d839fdc
+Author: Chris Mendez <mendezc@oregonstate.edu>
+Date:   Sun Oct 23 20:53:36 2016 -0700
+&
+     Merge branch 'master' of https://github.com/bowenjos/cs444-020\\
+\hline
+
+commit 713d43ca62592180a2356cfcc985e5f5e0a414d9
+Author: Chris Mendez <mendezc@oregonstate.edu>
+Date:   Sun Oct 23 20:53:29 2016 -0700
+&
+     Adding tex file\\
+\hline
+
+commit d839fdc6c6952ef7c0bc53180b0dfef7c4892597
+Author: Mendezc1 <mendezc@oregonstate.edu>
+Date:   Sat Oct 22 11:58:31 2016 -0700
+&
+     attempting to improve iosched to be more clook instead of noop\\
+\hline
+
+commit f369035454f15b7e6c84e4bfee60e99e6da46987
+Author: Mendezc1 <mendezc@oregonstate.edu>
+Date:   Sat Oct 22 10:25:24 2016 -0700
+&
+     sstf-iosched.c added\\
+\hline
+\end{tabular}
+
+\subsection{Work Log}
+\begin{tabular}{ |p{3cm}|p{3cm}|p{5cm}| } 
+\hline
+
+Date & Time & What \\
+\hline
+10/22/2016& 10am-1pm&Started assignment, familiarized ourselves with the noop-iosched.c file as well as the LOOK and CLOOK functions. Attempted to load the qemu without virtio and eventually got it working. Ran into an issue with yocto running with our updates. \\
+ \hline
+10/23/2016& 12am-10pm&Got questions answered by Kevin, we were on the right path however for some reason the yocto was continuing to load the generic version and not our version. As soon as we get that figured out we can work on making sure our implementation of sstf-iosched is working properly. Began working on write up and setting the latex file up. \\
+ \hline
+10/24/2016& 3pm-4pm&Met in the library to sort out our bugs. We managed to get the qemu to use our version of the yocto but were met with crashes. We determined that the crashes were likely the result of our iosched and went to work fixing the implementation. \\
+
+
+ \hline
+\end{tabular}
+
+\end{document}

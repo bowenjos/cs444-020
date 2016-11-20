@@ -1,0 +1,154 @@
+\documentclass[letterpaper,10pt,titlepage]{article}
+
+\usepackage{graphicx}                                        
+\usepackage{amssymb}                                         
+\usepackage{amsmath}                                         
+\usepackage{amsthm}                                          
+
+\usepackage{alltt}                                           
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+
+\usepackage{balance}
+\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+
+\usepackage{geometry}
+\usepackage{listings}  
+\lstset{language=C}
+\geometry{textheight=8.5in, textwidth=6in}
+
+%random comment
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+
+\usepackage{hyperref}
+\usepackage{geometry}
+
+\def\name{Christopher Mendez, Joshua Bowen}
+
+
+%% The following metadata will show up in the PDF properties
+\hypersetup{
+  colorlinks = true,
+  urlcolor = black,
+  pdfauthor = {\name},
+  pdfkeywords = {cs444 },
+  pdftitle = {CS 444 Project 3: The Kernel Crypto API},
+  pdfsubject = {CS 444 Project 3},
+  pdfpagemode = UseNone
+}
+
+\begin{document}
+
+\begin{titlepage}
+	\centering
+	\vspace*{4cm}
+	{\scshape\huge Assignment 3: The Kernel Crypto API\par}
+	\vspace{1cm}
+	{\scshape\LARGE CS 444: Operating Systems II\par}
+	\vspace{0.5cm}
+	{\large\bfseries Fall 2016\par}
+	{\large Abstract\par}
+	\vspace {0.5cm}
+		This project involves researching and implementing a RAM Disk Device driver which allocates memory that is encrypted on write and unencrypted on read. The goal is to gain an understanding of how RAM Drivers and Encryption works inside of an operating system. Through work our process of learning and implementing the RAM Driver is shown.
+	\par
+	\vspace{1cm}
+	{\Large\itshape Joshua D. Bowen\par}
+	{\Large\itshape Chris J. Mendez\par}
+	\vfill
+	{\large \today\par}	
+
+\end{titlepage}
+
+Assignment 3, CS444
+Christopher Mendez, Joshua Bowen
+
+
+
+\section{RAM Driver Design}
+
+After reading some of the LDD3 document linked to from the assignment, we went online and found a version of the sbull ram disk driver.
+The plan from there was to modify it and encrypt it accordingly.
+The majority of the changes to the driver occurred in the transfer function, which takes care of reading and writing to and from the ram disk.
+The original write used memcpy and we overwrote with:
+
+memset(dev->data + offset + i, 0, cryptoi\_cipher\_blocksize(tfm));
+
+crypto\_cipher\_encrypt\_one(tfm, dev->data + offset + i, buffer + i);
+
+Where tfm (which stands for transformation) is the cipher we defined using our key. Similarly the read originally used a memcpy to read the data, and we replaced that with:
+
+crypto\_cipher\_decrypt\_one(tfm, buffer + i, dev->data + offset + i);
+
+\section{Questions}
+\subsection{What do you think the main point of this assignment is?}
+
+ \sloppy The main point of this assignment was to teach us more about different aspects of the kernel.
+Specifically pertaining to modules. Additionally due to the lack of our access to SUDO we learned how to problem solve and work our way around a problem to still arrive at the solution. In a very literal sense we did the problem solving associated with engineering.
+
+\subsection{How did you personally approach the problem? Design decisions, algorithm, etc.}
+
+\sloppy Before we jumped into the problem it was incredibly important that we familiarized ourself with I/O. We began by researching this topic and reviewing what we already knew. From there we moved into the crypto library to familiarze ourself with that piece of software. We wanted to make sure we had an understanding of everything before we jumped intt it. After this we looked into stuff already existent within the Kernel.
+
+
+\sloppy Once we had found what we need we made the modifications that suited our needs. After we had exactly what we needed the testing phase begins. Our goal of course is to make sure that the program is doing eactly what we think it should be doing exactly when it should be doing it withour fail. Once the program was working properly then we would know it was done. If it was not working properly then we would further debug and if neccessary revist our implemtnation or solution and start again.
+
+\subsection{How did you ensure your solution was correct? Testing details, for instance.}
+
+\sloppy To test our solution, we would output the data from the buffer three times. First, before it was encrypted, second after it was encrypted and third after it had been decrypted. If the output from before encryption and after decryption was the same and after being encrypted the output was gibberish, we knew our key was working. 
+
+\subsection{What did you learn?}
+
+\sloppy I learned some of the linux/crypto.h api, as well as the basics of a module in linux. Particularly we had to pass our key as a module parameter, which caused some issues in figuring that out. More broadly I feel like we’re beginning to grasp I/O to a greater degree and what goes into making it work in the kernel after doing two assignments involving I/O. 
+
+
+\section {History}
+\subsection {Git Version Control Log}
+\begin{tabular}{ |p{10cm}|p{3cm}| } 
+ \hline
+ Commit & Message \\
+ \hline
+
+commit 475cc829ba05ad1c73607ff434ec9c2ef6dd8b81
+Merge: 3e0482b 1b77c30
+Author: bowenjos <bowenjos@oregonstate.edu>
+Date:   Mon Nov 14 13:01:28 2016 -0800
+&
+    Merge branch 'master' of https://github.com/bowenjos/cs444-020\\
+\hline
+
+commit 3e0482b935f3c650912424576c36879b2fd76b6b
+Author: bowenjos <bowenjos@oregonstate.edu>
+Date:   Mon Nov 14 13:00:53 2016 -0800
+&
+    Assignment3 Files\\
+\hline
+
+\end{tabular}
+
+\subsection{Work Log}
+\begin{tabular}{ |p{3cm}|p{3cm}|p{5cm}| } 
+\hline
+Date & Time & What \\
+\hline
+11/08/2016& 3pm-5pm&Started assignment, started looking into LDD3 and linux/crypto.h library to try to understand the api we would be using. Found out about the sbull driver and found a copy online. \\
+ \hline
+ 11/10/2016& 10am-12am& Began programming, created a key and a cipher and overwrote the transfer function. \\
+\hline
+11/11/2016& 12am-2pm& Began write up. \\
+\hline
+11/12/2016& 2pm-5pm& Worked on debugging the code, realized that the key needed to be passed as a module parameter. \\
+\hline
+11/13/2016& 8am-10am& Continued writeup and debugging, understood the programming but am having difficulty getting the assignment to load as a module in a running vm. \\
+\hline
+11/13/2016& 6pm-7pm& Continued write up, formatted written material into a \LaTeX document.\\ 
+\hline
+11/14/2016& 1pm-4pm &Finished write up.\\
+ \hline
+\end{tabular}
+
+\end{document}
