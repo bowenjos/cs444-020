@@ -37,8 +37,8 @@
   urlcolor = black,
   pdfauthor = {\name},
   pdfkeywords = {cs444 },
-  pdftitle = {CS 444 Project 3: The Kernel Crypto API},
-  pdfsubject = {CS 444 Project 3},
+  pdftitle = {CS 444 Project 4: The SLOB SLAB},
+  pdfsubject = {CS 444 Project 4},
   pdfpagemode = UseNone
 }
 
@@ -71,19 +71,50 @@ Christopher Mendez, Joshua Bowen
 
 \section{MM Driver Design}
 
+Our first decision was to research the already existing SLOB.
+We found in the SLOB the already existent Memory Allocation system and then the memory placement portion.
+The SLOB already had a system in place to place or create pages at the first location that it could find space.
+The modification we needed to make is one that takes this but instead of placing at the first spot, it instead finds the best spot.
+
+To implement this design we first came up with a mental model of what this looked like.
+
+The SLOB would iterate accross the list of pages looking for the best fit.
+When the current position is a better fit than the current best fit, the new best fit is remembered.
+Once the SLOB reaches the end of the list it will place the item at the bes fit location.
+If no fit is found at all, then a new page is generated to fit the item.
+
+Using this mental model we knew what it was that we needed to do.
+With this in mind we sketched up some pseudocode.
+
+
 
 
 \section{Questions}
 \subsection{What do you think the main point of this assignment is?}
 
- \sloppy 
+ \sloppy The main point of this assignment was to learn more about the various aspects within the kernel of the Operating Systems.
+ In this specific assignment we were supposed to be able to look at the SLOB and find what it was that needed to be changed.
+ Then as in previous assignments we were responsible for getting it working with the rest of the OS.
+ We continued with the tradition of having some strange error or bug in the code that we needed to flex our problem solving skills to solve.
+
+\sloppy On top of the figuring out how to get the SLAB working, we were also tasked with how to test it.
+I think one of the points of this assignment was to once again make sure that we were able to understand our assignment and make tests that thoroughly tested the code.
+In general these assignments often have different ways of testing the algorithm that is different from every other part of the kernel.
 
 \subsection{How did you personally approach the problem? Design decisions, algorithm, etc.}
 
-\sloppy The first step, of course, was to Research the already existing SLOB. 
+\sloppy The first step, of course, was to research the already existing SLOB. 
+After looking into the SLOB we were able to determine what would need to be changed. 
+In general the SLOB already had a functioning Memory Allocation system which didn't need to be changed. 
+What we needed to change was how how the SLOB determined where pages went. Our goal is to change the "First Find" fit to a "Best Fit".
 
+\sloppy We decided that all we needed to change was this aspect of the SLOB. 
+We then wrote up a design for the algorithm before implementing.
+This design can be seen above.
 
-\sloppy 
+\sloppy After crafting our design we began implementation.
+After implementation came testing.
+
 
 \subsection{How did you ensure your solution was correct? Testing details, for instance.}
 
@@ -91,7 +122,9 @@ Christopher Mendez, Joshua Bowen
 
 \subsection{What did you learn?}
 
-\sloppy  
+\sloppy  We learned about the SLOB and memory management in general.
+We also learned how to debug and test a different aspect of the kernel.
+Additionally, we learned how to familiarze ourselves with another aspect of the kernel and make changes to what we needed so that it would do what we wanted.
 
 
 \section {History}
