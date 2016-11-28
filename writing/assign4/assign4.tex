@@ -118,6 +118,22 @@ After implementation came testing.
 
 \subsection{How did you ensure your solution was correct? Testing details, for instance.}
 
+\sloppy Originally, the plan was to modify the data structure struct page, and to include an element that would be the difference between the requested allotment and the allotment available. 
+This was a way overengineered way of approaching the problem, and one that I’m not sure would work. 
+As soon as we began programming and tried modifying the data structure, there was a huge amount of compile errors. 
+This made us feel like we were on the wrong track and so rethought the approach a bit. 
+From what we understood of the current slob allocation, the slob\_page\_alloc function handled finding where to place a block and placing it. 
+The first fit algorithm would just check if there was a difference between the allocated request and page, and if there was, it could place the requested blocks there. 
+We rewrote that so that when it got to that point where there was a difference it would keep track of the best fit, and then upon going through all the pages, allocate the blocks at the spot with the best fit. 
+	
+In order to test this, we created two system calls. 
+The first kept track of the memory being claimed by the slob file. 
+It did this by starting at 0 and every time a page was allocated, it increased by the page size. 
+There was also the memory being used. 
+The memory being used would just increment and decrement as blocks were allocated. 
+The first system call returned the memory claimed the second returned the memory claimed - the memory being used. 
+By dividing the difference in claimed and used over the total claimed, we would be able to see the fragmentation. 
+
 \sloppy  
 
 \subsection{What did you learn?}
@@ -148,7 +164,12 @@ Date & Time & What \\
  \hline
  11/19/2016& 10am-12pm& Began some code. \\
  \hline
- 11/20/2016& 10am- & Continued working on the assignment, began writing our formal design document.\\
+ 11/20/2016& 10am-12pm & Continued working on the assignment, began writing our formal design document.\\
+ \hline
+ 11/23/2016& 8am-12pm & Tested implementation.\\
+ \hline
+ 11/27/2016& 9pm-10pm & Finished Write up.\\
+ \hline
 \end{tabular}
 
 \end{document}
