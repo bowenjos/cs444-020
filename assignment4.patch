@@ -1,0 +1,114 @@
+diff --git a/writing/assign4/assign4.pdf b/writing/assign4/assign4.pdf
+new file mode 100755
+index 0000000..da46f59
+Binary files /dev/null and b/writing/assign4/assign4.pdf differ
+diff --git a/writing/assign4/assign4.tex b/writing/assign4/assign4.tex
+index 12989dd..42eb4ae 100755
+--- a/writing/assign4/assign4.tex
++++ b/writing/assign4/assign4.tex
+@@ -37,8 +37,8 @@
+   urlcolor = black,
+   pdfauthor = {\name},
+   pdfkeywords = {cs444 },
+-  pdftitle = {CS 444 Project 3: The Kernel Crypto API},
+-  pdfsubject = {CS 444 Project 3},
++  pdftitle = {CS 444 Project 4: The SLOB SLAB},
++  pdfsubject = {CS 444 Project 4},
+   pdfpagemode = UseNone
+ }
+ 
+@@ -71,27 +71,76 @@ Christopher Mendez, Joshua Bowen
+ 
+ \section{MM Driver Design}
+ 
++Our first decision was to research the already existing SLOB.
++We found in the SLOB the already existent Memory Allocation system and then the memory placement portion.
++The SLOB already had a system in place to place or create pages at the first location that it could find space.
++The modification we needed to make is one that takes this but instead of placing at the first spot, it instead finds the best spot.
++
++To implement this design we first came up with a mental model of what this looked like.
++
++The SLOB would iterate accross the list of pages looking for the best fit.
++When the current position is a better fit than the current best fit, the new best fit is remembered.
++Once the SLOB reaches the end of the list it will place the item at the bes fit location.
++If no fit is found at all, then a new page is generated to fit the item.
++
++Using this mental model we knew what it was that we needed to do.
++With this in mind we sketched up some pseudocode.
++
++
+ 
+ 
+ \section{Questions}
+ \subsection{What do you think the main point of this assignment is?}
+ 
+- \sloppy 
++ \sloppy The main point of this assignment was to learn more about the various aspects within the kernel of the Operating Systems.
++ In this specific assignment we were supposed to be able to look at the SLOB and find what it was that needed to be changed.
++ Then as in previous assignments we were responsible for getting it working with the rest of the OS.
++ We continued with the tradition of having some strange error or bug in the code that we needed to flex our problem solving skills to solve.
++
++\sloppy On top of the figuring out how to get the SLAB working, we were also tasked with how to test it.
++I think one of the points of this assignment was to once again make sure that we were able to understand our assignment and make tests that thoroughly tested the code.
++In general these assignments often have different ways of testing the algorithm that is different from every other part of the kernel.
+ 
+ \subsection{How did you personally approach the problem? Design decisions, algorithm, etc.}
+ 
+-\sloppy The first step, of course, was to Research the already existing SLOB. 
++\sloppy The first step, of course, was to research the already existing SLOB. 
++After looking into the SLOB we were able to determine what would need to be changed. 
++In general the SLOB already had a functioning Memory Allocation system which didn't need to be changed. 
++What we needed to change was how how the SLOB determined where pages went. Our goal is to change the "First Find" fit to a "Best Fit".
+ 
++\sloppy We decided that all we needed to change was this aspect of the SLOB. 
++We then wrote up a design for the algorithm before implementing.
++This design can be seen above.
++
++\sloppy After crafting our design we began implementation.
++After implementation came testing.
+ 
+-\sloppy 
+ 
+ \subsection{How did you ensure your solution was correct? Testing details, for instance.}
+ 
++\sloppy Originally, the plan was to modify the data structure struct page, and to include an element that would be the difference between the requested allotment and the allotment available. 
++This was a way overengineered way of approaching the problem, and one that I’m not sure would work. 
++As soon as we began programming and tried modifying the data structure, there was a huge amount of compile errors. 
++This made us feel like we were on the wrong track and so rethought the approach a bit. 
++From what we understood of the current slob allocation, the slob\_page\_alloc function handled finding where to place a block and placing it. 
++The first fit algorithm would just check if there was a difference between the allocated request and page, and if there was, it could place the requested blocks there. 
++We rewrote that so that when it got to that point where there was a difference it would keep track of the best fit, and then upon going through all the pages, allocate the blocks at the spot with the best fit. 
++	
++In order to test this, we created two system calls. 
++The first kept track of the memory being claimed by the slob file. 
++It did this by starting at 0 and every time a page was allocated, it increased by the page size. 
++There was also the memory being used. 
++The memory being used would just increment and decrement as blocks were allocated. 
++The first system call returned the memory claimed the second returned the memory claimed - the memory being used. 
++By dividing the difference in claimed and used over the total claimed, we would be able to see the fragmentation. 
++
+ \sloppy  
+ 
+ \subsection{What did you learn?}
+ 
+-\sloppy  
++\sloppy  We learned about the SLOB and memory management in general.
++We also learned how to debug and test a different aspect of the kernel.
++Additionally, we learned how to familiarze ourselves with another aspect of the kernel and make changes to what we needed so that it would do what we wanted.
+ 
+ 
+ \section {History}
+@@ -115,7 +164,12 @@ Date & Time & What \\
+  \hline
+  11/19/2016& 10am-12pm& Began some code. \\
+  \hline
+- 11/20/2016& 10am- & Continued working on the assignment, began writing our formal design document.\\
++ 11/20/2016& 10am-12pm & Continued working on the assignment, began writing our formal design document.\\
++ \hline
++ 11/23/2016& 8am-12pm & Tested implementation.\\
++ \hline
++ 11/27/2016& 9pm-10pm & Finished Write up.\\
++ \hline
+ \end{tabular}
+ 
+ \end{document}
